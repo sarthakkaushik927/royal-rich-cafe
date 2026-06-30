@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 
 // ─── Frame filename generators (match actual files on disk) ──────────
 const heroFrameName = (i: number) =>
-  `ezgif-frame-${String(i).padStart(3, '0')}.png`;
+  `frame_${String(i).padStart(4, '0')}.jpg`;
 
 const foodFrameName = (i: number) =>
   `frame_${String(i).padStart(4, '0')}.jpg`;
@@ -16,10 +16,10 @@ function App() {
       <Navbar />
       {/* ════════════════ HERO SECTION ════════════════ */}
       <ScrollFrameSequence
-        assetFolder="/heroassets"
-        frameCount={51}
+        assetFolder="/newheroassets"
+        frameCount={300}
         getFrameName={heroFrameName}
-        scrollHeightVh={400}
+        scrollHeightVh={1000}
       >
 
 
@@ -54,9 +54,9 @@ function App() {
       {/* ════════════════ FOOD SECTION ════════════════ */}
       <ScrollFrameSequence
         assetFolder="/foodassets"
-        frameCount={120}
+        frameCount={300}
         getFrameName={foodFrameName}
-        scrollHeightVh={500}
+        scrollHeightVh={1000}
       >
 
 
