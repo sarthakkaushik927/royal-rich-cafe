@@ -1,5 +1,7 @@
 import ScrollFrameSequence from './components/ScrollFrameSequence';
 import HeroOverlay from './components/HeroOverlay';
+import FoodOverlay from './components/FoodOverlay';
+import Navbar from './components/Navbar';
 
 // ─── Frame filename generators (match actual files on disk) ──────────
 const heroFrameName = (i: number) =>
@@ -11,6 +13,7 @@ const foodFrameName = (i: number) =>
 function App() {
   return (
     <main className="bg-background text-text-primary">
+      <Navbar />
       {/* ════════════════ HERO SECTION ════════════════ */}
       <ScrollFrameSequence
         assetFolder="/heroassets"
@@ -57,19 +60,8 @@ function App() {
       >
 
 
-        {/* Food section text */}
-        <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center text-center p-8 pointer-events-none">
-          <span className="font-body text-[0.65rem] font-medium tracking-[0.35em] uppercase text-gold mb-6">
-            The Menu
-          </span>
-          <h2 className="font-display text-[clamp(2.5rem,7vw,5.5rem)] font-[900] leading-[1.1] text-text-primary mb-5">
-            A Feast for<br />
-            <em className="text-gradient italic">The Senses</em>
-          </h2>
-          <p className="font-body text-[clamp(0.9rem,1.5vw,1.1rem)] text-text-muted max-w-[400px] leading-relaxed">
-            Explore our signature dishes — a symphony of flavor, color, and texture.
-          </p>
-        </div>
+        {/* Food section text — top-right with fade in/out */}
+        <FoodOverlay />
       </ScrollFrameSequence>
 
       {/* ════════════════ FOOTER ════════════════ */}

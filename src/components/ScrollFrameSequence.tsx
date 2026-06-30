@@ -64,6 +64,7 @@ export default function ScrollFrameSequence({
   children,
 }: ScrollFrameSequenceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(0);
@@ -112,14 +113,13 @@ export default function ScrollFrameSequence({
       if (loadedCount >= totalFrames) {
         imagesRef.current = images;
         setLoaded(true);
-        // Draw the first frame once everything is ready
         renderFrame(0);
       }
     };
 
     for (let i = 0; i < totalFrames; i++) {
       const img = new Image();
-      img.src = getFrameSrc(i + 1); // frames are 1-indexed on disk
+      img.src = getFrameSrc(i + 1);
       img.onload = onFrameReady;
       img.onerror = onFrameReady;
       images[i] = img;
@@ -135,57 +135,123 @@ export default function ScrollFrameSequence({
     };
   }, [frameCount, getFrameSrc, renderFrame]);
 
-  // ─── GSAP ScrollTrigger setup ───────────────────────────────────────
+  // ─── Manual pinning via scroll listener (works on ALL mobile) ──────
+  useEffect(() => {
+    const container = containerRef.current;
+    const viewport = viewportRef.current;
+    if (!container || !viewport) return;
+
+    const onScroll = () => {
+      const rect = container.getBoundingClientRect();
+      const containerTop = rect.top;
+      const containerBottom = rect.bottom;
+      const viewportHeight = window.innerHeight;
+
+      if (containerTop <= 0 && containerBottom > viewportHeight) {
+        // Container spans the viewport → pin the viewport div
+        viewport.style.position = 'fixed';
+        viewport.style.top = '0';
+        viewport.style.left = '0';
+        viewport.style.width = '100%';
+        viewport.style.height = `${viewportHeight}px`;
+        viewport.style.zIndex = '1';
+      } else if (containerBottom <= viewportHeight) {
+        // Scrolled past → stick to bottom of container
+        viewport.style.position = 'absolute';
+        viewport.style.top = 'auto';
+        viewport.style.bottom = '0';
+        viewport.style.left = '0';
+        viewport.style.width = '100%';
+        viewport.style.height = `${viewportHeight}px`;
+        viewport.style.zIndex = '1';
+      } else {
+        // Haven't reached yet → stay at top of container
+        viewport.style.position = 'absolute';
+        viewport.style.top = '0';
+        viewport.style.bottom = 'auto';
+        viewport.style.left = '0';
+        viewport.style.width = '100%';
+        viewport.style.height = `${viewportHeight}px`;
+        viewport.style.zIndex = '1';
+      }
+    };
+
+    // Run once immediately
+    onScroll();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
+  // ─── Frame scrubbing via GSAP ScrollTrigger ─────────────────────────
   useEffect(() => {
     if (!loaded) return;
 
-    const ctx = gsap.context(() => {
-      const obj = { frame: 0 };
+    const obj = { frame: 0 };
 
-      gsap.to(obj, {
-        frame: frameCount - 1,
-        snap: 'frame',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 0.5,
-        },
-        onUpdate: () => {
-          const newFrame = Math.round(obj.frame);
-          if (newFrame !== currentFrameRef.current) {
-            currentFrameRef.current = newFrame;
-            if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
-            rafIdRef.current = requestAnimationFrame(() => {
-              renderFrame(newFrame);
-            });
-          }
-        },
-      });
-    }, containerRef);
+    const frameTween = gsap.to(obj, {
+      frame: frameCount - 1,
+      snap: 'frame',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.5,
+      },
+      onUpdate: () => {
+        const newFrame = Math.round(obj.frame);
+        if (newFrame !== currentFrameRef.current) {
+          currentFrameRef.current = newFrame;
+          if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = requestAnimationFrame(() => {
+            renderFrame(newFrame);
+          });
+        }
+      },
+    });
 
     return () => {
       if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
-      ctx.revert();
+      frameTween.scrollTrigger?.kill();
+      frameTween.kill();
     };
   }, [loaded, frameCount, renderFrame]);
 
-  // ─── Handle window resize → re-render current frame ────────────────
+  // ─── Handle resize → re-render current frame ──────────────────────
   useEffect(() => {
     if (!loaded) return;
 
+    let resizeTimer: ReturnType<typeof setTimeout>;
+
     const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        canvas.width = 0;
-        canvas.height = 0;
-      }
-      renderFrame(currentFrameRef.current);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          canvas.width = 0;
+          canvas.height = 0;
+        }
+        renderFrame(currentFrameRef.current);
+        ScrollTrigger.refresh();
+      }, 150);
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    window.visualViewport?.addEventListener('resize', handleResize);
+
+    return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleResize);
+    };
   }, [loaded, renderFrame]);
 
   // Circumference for the SVG ring progress indicator
@@ -194,11 +260,15 @@ export default function ScrollFrameSequence({
   return (
     <div
       ref={containerRef}
-      className={className}
+      className={`scroll-sequence-container ${className}`}
       style={{ height: `${scrollHeightVh}vh`, position: 'relative' }}
     >
-      {/* Sticky inner viewport */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      {/* Viewport — manually pinned via JS (no CSS sticky, no GSAP pin) */}
+      <div
+        ref={viewportRef}
+        className="overflow-hidden"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh' }}
+      >
         {/* Loading state */}
         {!loaded && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-background">
@@ -236,7 +306,8 @@ export default function ScrollFrameSequence({
         {/* Canvas */}
         <canvas
           ref={canvasRef}
-          className="block w-full h-full bg-background"
+          className="block w-full h-full"
+          style={{ background: '#000' }}
         />
 
         {/* Overlay content */}
