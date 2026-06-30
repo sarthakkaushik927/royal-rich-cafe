@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Royal Rich Café — Tailwind v4 Theme (Light Luxury Palette)
+   ═══════════════════════════════════════════════════════════════════════ */
+@theme {
+  /* ── Backgrounds ─────────────────────────────────────────────────── */
+  --color-background: #FDF6F0;       /* warm ivory/cream base */
+  --color-surface: #FFFFFF;          /* cards, elevated sections */
+  --color-surface-dim: #F7EDE4;      /* subtle tinted surface */
+
+  /* ── Text ────────────────────────────────────────────────────────── */
+  --color-text-primary: #2B1B17;     /* deep espresso-brown */
+  --color-text-muted: #6E5950;       /* softer brown for secondary text */
+
+  /* ── Accents ─────────────────────────────────────────────────────── */
+  --color-gold: #D4AF37;             /* primary accent */
+  --color-gold-light: #E8C873;       /* hover / highlight */
+  --color-gold-dim: rgba(212, 175, 55, 0.18);
+  --color-blush: #F2B8C6;            /* soft pink — decorative */
+  --color-blush-deep: #D88BA0;       /* CTAs, emphasis, links */
+
+  /* ── Typography ──────────────────────────────────────────────────── */
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ── Animations ──────────────────────────────────────────────────── */
+  --animate-scroll-pulse: scrollPulse 2s ease-in-out infinite;
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: auto; /* GSAP controls scroll smoothing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+
+/* ─── Utility: Gradient text (gold → blush) ──────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #E8C873 40%, #F2B8C6 70%, #D88BA0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Keyframes ──────────────────────────────────────────────────────── */
+@keyframes scrollPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.15);
+  }
+}
