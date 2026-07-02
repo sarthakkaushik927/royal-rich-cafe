@@ -43,14 +43,19 @@ function drawCover(
   if (imgRatio > canvasRatio) {
     drawHeight = canvasHeight;
     drawWidth = canvasHeight * imgRatio;
-    offsetX = (canvasWidth - drawWidth) / 2;
-    offsetY = 0;
   } else {
     drawWidth = canvasWidth;
     drawHeight = canvasWidth / imgRatio;
-    offsetX = 0;
-    offsetY = (canvasHeight - drawHeight) / 2;
   }
+
+  // Zoom out slightly on mobile to reveal more horizontal context
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const scale = isMobile ? 0.85 : 1;
+  drawWidth *= scale;
+  drawHeight *= scale;
+
+  offsetX = (canvasWidth - drawWidth) / 2;
+  offsetY = (canvasHeight - drawHeight) / 2;
 
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 }
@@ -107,17 +112,30 @@ export default function ScrollFrameSequence({
     const totalFrames = frameCount;
     const images: HTMLImageElement[] = new Array(totalFrames);
 
+    imagesRef.current = images;
+
     const onFrameReady = () => {
       loadedCount++;
       setLoadProgress(Math.round((loadedCount / totalFrames) * 100));
-      if (loadedCount >= totalFrames) {
-        imagesRef.current = images;
+      
+      // Eagerly show the website after the first 5 frames load, 
+      // instead of waiting for all 300 to download!
+      if (loadedCount >= Math.min(5, totalFrames) && !loaded) {
         setLoaded(true);
         renderFrame(0);
       }
     };
 
     for (let i = 0; i < totalFrames; i++) {
+      // Option A: Skip frames on mobile to save massive amounts of RAM and CPU
+      const isMobile = window.innerWidth < 768;
+      if (isMobile && i % 2 !== 0 && i > 0) {
+        // Reuse the previous frame's image object in the array to halve memory usage
+        images[i] = images[i - 1]; 
+        onFrameReady();
+        continue;
+      }
+
       const img = new Image();
       img.src = getFrameSrc(i + 1);
       img.onload = onFrameReady;
@@ -202,7 +220,8 @@ export default function ScrollFrameSequence({
         trigger: containerRef.current,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: 0.5,
+        // Change from 0.5 to 0.1 to remove the artificial lag feeling on mobile
+        scrub: 0.1,
       },
       onUpdate: () => {
         const newFrame = Math.round(obj.frame);
@@ -297,8 +316,8 @@ export default function ScrollFrameSequence({
                 {loadProgress}%
               </text>
             </svg>
-            <span className="font-body text-[10px] tracking-[0.25em] uppercase text-text-muted">
-              Loading frames
+            <span className="font-body text-[10px] tracking-[0.25em] uppercase text-white/50 mt-4">
+              Loading Experience
             </span>
           </div>
         )}
