@@ -64,33 +64,44 @@ export function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-24 text-[#F7F3EC] mb-16 w-full max-w-4xl"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 text-[#F7F3EC] mb-16 w-full max-w-5xl"
         >
-          <div className="flex flex-col gap-4 items-center md:items-start">
-            <h4 className="font-serif text-2xl text-[#D4A24C]">Location</h4>
-            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2] text-center md:text-left">
+          <div className="flex flex-col gap-4 items-center md:items-start text-center md:text-left">
+            <h4 className="font-serif text-xl text-[#D4A24C]">Location</h4>
+            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2]">
               123 Elegance Boulevard<br />
               Culinary District, NY 10001
             </p>
           </div>
-          <div className="flex flex-col gap-4 items-center">
-            <h4 className="font-serif text-2xl text-[#D4A24C]">Contact</h4>
-            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2] text-center">
+          <div className="flex flex-col gap-4 items-center md:items-start text-center md:text-left">
+            <h4 className="font-serif text-xl text-[#D4A24C]">Contact</h4>
+            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2]">
               reservations@royalrich.com<br />
               +1 (212) 555-0199
             </p>
           </div>
-          <div className="flex flex-col gap-4 items-center md:items-end">
-            <h4 className="font-serif text-2xl text-[#D4A24C]">Hours</h4>
-            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2] text-center md:text-right">
+          <div className="flex flex-col gap-4 items-center md:items-start text-center md:text-left">
+            <h4 className="font-serif text-xl text-[#D4A24C]">Hours</h4>
+            <p className="text-sm tracking-wider leading-relaxed text-[#C7BFB2]">
               Mon-Sun: 5:00 PM - 11:00 PM<br />
               Bar: Open until 1:00 AM
             </p>
           </div>
+          <div className="flex flex-col gap-4 items-center md:items-start text-center md:text-left">
+            <h4 className="font-serif text-xl text-[#D4A24C]">Staff</h4>
+            <div className="flex flex-col gap-2">
+              <a href="/admin/login" className="text-sm tracking-wider text-[#C7BFB2] hover:text-[#D4A24C] transition-colors">
+                Admin Portal
+              </a>
+              <a href="/chef/login" className="text-sm tracking-wider text-[#C7BFB2] hover:text-[#D4A24C] transition-colors">
+                Kitchen Portal
+              </a>
+            </div>
+          </div>
         </motion.div>
 
         {/* Bottom Line */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#D4A24C]/40 to-transparent mb-8" />
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4A24C]/40 to-transparent mb-8" />
         
         <p className="text-xs md:text-sm text-[#C7BFB2]/60 tracking-[0.2em] uppercase">
           &copy; {new Date().getFullYear()} Royal Rich Café. All rights reserved.

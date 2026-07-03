@@ -2,6 +2,8 @@ import { useState, type SelectHTMLAttributes } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Wine, Sparkles, ChevronDown } from "lucide-react";
 import { GoldButton } from "../common/GoldButton";
+import { ReservationModal } from "../../pages/modals/ReservationModal";
+import { toast } from "sonner";
 
 function Select({ children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
@@ -30,10 +32,11 @@ export function ReserveTable() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [guests, setGuests] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <section id="reserve" className="relative py-24 md:py-32 px-6 md:px-12 flex flex-col justify-between min-h-[85vh]">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0D0B09]/80 to-[#0D0B09]" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#0D0B09]/80 to-[#0D0B09]" />
       
       <div className="relative z-10 max-w-5xl mx-auto text-center flex-1">
         <div className="flex items-center justify-center gap-6 mb-4">
@@ -54,7 +57,11 @@ export function ReserveTable() {
           transition={{ duration: 0.6 }}
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
-            console.log({ date, time, guests });
+            if (!date || !time || !guests) {
+              toast.error("Please select a date, time, and guest count.");
+              return;
+            }
+            setIsModalOpen(true);
           }}
           className="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-4 w-full px-4 md:px-0"
         >
@@ -80,7 +87,7 @@ export function ReserveTable() {
         </motion.form>
 
         <div className="mt-20 mb-20">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#D4A24C]/50 to-transparent mb-12" />
+          <div className="h-px w-full bg-linear-to-r from-transparent via-[#D4A24C]/50 to-transparent mb-12" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
             {features.map(({ Icon, label }) => (
               <div key={label} className="flex flex-col items-center gap-3 md:gap-4">
@@ -91,6 +98,12 @@ export function ReserveTable() {
           </div>
         </div>
       </div>
+
+      <ReservationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialData={{ date, time, guests }}
+      />
     </section>
   );
 }

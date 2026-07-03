@@ -6,7 +6,7 @@ export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-200 flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -54,7 +54,7 @@ export function Chatbot() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-gradient-to-tr from-[#D4A24C] to-[#c8963f] rounded-full flex items-center justify-center text-[#1A1410] shadow-[0_0_20px_rgba(212,162,76,0.3)] hover:scale-110 hover:shadow-[0_0_30px_rgba(212,162,76,0.5)] transition-all duration-300"
+        className="w-14 h-14 bg-linear-to-tr from-[#D4A24C] to-[#c8963f] rounded-full flex items-center justify-center text-[#1A1410] shadow-[0_0_20px_rgba(212,162,76,0.3)] hover:scale-110 hover:shadow-[0_0_30px_rgba(212,162,76,0.5)] transition-all duration-300"
       >
         <MessageCircle size={28} className={isOpen ? "hidden" : "block"} />
         <X size={28} className={isOpen ? "block" : "hidden"} />

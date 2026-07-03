@@ -7,7 +7,7 @@ export function AtmosphereSection() {
       id="about"
       className="relative w-full min-h-[85vh] flex items-center justify-end py-24 md:py-32"
     >
-      <div className="absolute inset-y-0 right-0 w-full md:w-2/3 lg:w-1/2 bg-gradient-to-l from-[#0D0B09] via-[#0D0B09]/80 to-transparent" />
+      <div className="absolute inset-y-0 right-0 w-full md:w-2/3 lg:w-1/2 bg-linear-to-l from-[#0D0B09] via-[#0D0B09]/80 to-transparent" />
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}

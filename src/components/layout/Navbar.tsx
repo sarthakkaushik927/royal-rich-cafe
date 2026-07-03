@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X, Diamond } from "lucide-react";
 
 const links = [
-  { label: "Home", href: "#home" },
-  { label: "Menu", href: "#menu" },
-  { label: "About", href: "#about" },
-  { label: "Reservations", href: "#reserve" },
+  { label: "Home", href: "/" },
+  { label: "Menu", href: "/menu" },
+  { label: "My Orders", href: "/my-orders" },
+  { label: "About", href: "/#about" },
+  { label: "Reservations", href: "/#reserve" },
 ];
 
 export function Navbar() {
@@ -27,22 +29,22 @@ export function Navbar() {
       }
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between transition-all duration-500">
-        <a href="#home" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <Diamond size={20} className="text-[#D4A24C] group-hover:rotate-180 transition-transform duration-700" />
           <span className="font-[Marcellus] text-[#D4A24C] text-2xl tracking-[0.15em] uppercase">
             Fine Dining
           </span>
-        </a>
+        </Link>
 
         <ul className="hidden md:flex items-center gap-10">
           {links.map((l) => (
             <li key={l.href}>
-              <a
-                href={l.href}
-                className="text-[#F7F3EC] text-[13px] font-[500] tracking-[0.2em] uppercase hover:text-[#D4A24C] transition-colors relative py-2 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#D4A24C] hover:after:w-full after:transition-all after:duration-300"
+              <Link
+                to={l.href}
+                className="text-[#F7F3EC] text-[13px] font-medium tracking-[0.2em] uppercase hover:text-[#D4A24C] transition-colors relative py-2 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#D4A24C] hover:after:w-full after:transition-all after:duration-300"
               >
                 {l.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -61,13 +63,13 @@ export function Navbar() {
           <ul className="flex flex-col px-6 py-4 gap-4">
             {links.map((l) => (
               <li key={l.href}>
-                <a
-                  href={l.href}
+                <Link
+                  to={l.href}
                   className="block text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
                   onClick={() => setOpen(false)}
                 >
                   {l.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

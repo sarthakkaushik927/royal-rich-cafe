@@ -62,7 +62,7 @@ export function ExquisiteCuisine() {
       className="relative pt-8 md:pt-12 pb-24 md:pb-32 px-6 md:px-12 bg-cover bg-center overflow-hidden"
       style={{ backgroundImage: `url(${bgImg})` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0D0B09]/70 via-[#0D0B09]/40 to-[#0D0B09]/70" />
+      <div className="absolute inset-0 bg-linear-to-b from-[#0D0B09]/70 via-[#0D0B09]/40 to-[#0D0B09]/70" />
       
       <SectionDivider className="mb-6 opacity-80" />
 
@@ -83,7 +83,7 @@ export function ExquisiteCuisine() {
         {/* Navigation Arrows */}
         <button 
           onClick={prevSlide}
-          className="absolute left-2 md:-left-12 z-[100] p-2 bg-black/40 hover:bg-[#D4A24C]/20 rounded-full text-[#D4A24C] hover:text-[#F7F3EC] transition-all cursor-pointer backdrop-blur-sm"
+          className="absolute left-2 md:-left-12 z-100 p-2 bg-black/40 hover:bg-[#D4A24C]/20 rounded-full text-[#D4A24C] hover:text-[#F7F3EC] transition-all cursor-pointer backdrop-blur-sm"
         >
           <ChevronLeft size={40} strokeWidth={1.5} />
         </button>
@@ -117,7 +117,7 @@ export function ExquisiteCuisine() {
 
         <button 
           onClick={nextSlide}
-          className="absolute right-2 md:-right-12 z-[100] p-2 bg-black/40 hover:bg-[#D4A24C]/20 rounded-full text-[#D4A24C] hover:text-[#F7F3EC] transition-all cursor-pointer backdrop-blur-sm"
+          className="absolute right-2 md:-right-12 z-100 p-2 bg-black/40 hover:bg-[#D4A24C]/20 rounded-full text-[#D4A24C] hover:text-[#F7F3EC] transition-all cursor-pointer backdrop-blur-sm"
         >
           <ChevronRight size={40} strokeWidth={1.5} />
         </button>
