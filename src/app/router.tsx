@@ -20,6 +20,8 @@ function ScrollToHashElement() {
         }
       }, 200);
       return () => clearTimeout(timer);
+    } else {
+      window.scrollTo(0, 0);
     }
   }, [hash, pathname]);
 

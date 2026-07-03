@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Diamond } from "lucide-react";
 
 const links = [
@@ -13,6 +13,14 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+
+  const handleLinkClick = (href: string) => {
+    if (href === '/' && location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    setOpen(false);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -29,7 +37,7 @@ export function Navbar() {
       }
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between transition-all duration-500">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group" onClick={() => handleLinkClick('/')}>
           <Diamond size={20} className="text-[#D4A24C] group-hover:rotate-180 transition-transform duration-700" />
           <span className="font-[Marcellus] text-[#D4A24C] text-2xl tracking-[0.15em] uppercase">
             Fine Dining
@@ -41,6 +49,7 @@ export function Navbar() {
             <li key={l.href}>
               <Link
                 to={l.href}
+                onClick={() => handleLinkClick(l.href)}
                 className="text-[#F7F3EC] text-[13px] font-medium tracking-[0.2em] uppercase hover:text-[#D4A24C] transition-colors relative py-2 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#D4A24C] hover:after:w-full after:transition-all after:duration-300"
               >
                 {l.label}
@@ -66,7 +75,7 @@ export function Navbar() {
                 <Link
                   to={l.href}
                   className="block text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
-                  onClick={() => setOpen(false)}
+                  onClick={() => handleLinkClick(l.href)}
                 >
                   {l.label}
                 </Link>
