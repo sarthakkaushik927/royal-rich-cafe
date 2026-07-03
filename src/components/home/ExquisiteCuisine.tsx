@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { GoldButton } from "../common/GoldButton";
 import { SectionDivider } from "../common/SectionDivider";
 import shrimpImg from "@/assets/shrimp.jpg";
 import risottoImg from "@/assets/risotto.jpg";
@@ -88,7 +87,7 @@ export function ExquisiteCuisine() {
           <ChevronLeft size={40} strokeWidth={1.5} />
         </button>
 
-        <div className="w-full relative h-[600px] md:h-[800px] flex items-center justify-center overflow-hidden mt-8">
+        <div className="w-full relative h-[460px] md:h-[660px] flex items-center justify-center overflow-hidden mt-8">
           <div className="overflow-hidden w-full h-full" ref={emblaRef}>
             <div className="flex h-full">
               {items.map((item) => (
@@ -104,11 +103,9 @@ export function ExquisiteCuisine() {
                       className="w-full h-[320px] md:h-[500px] object-cover rounded-sm transition-transform duration-700 group-hover:scale-110"
                     />
                   </div>
-                  <h3 className="mt-6 md:mt-10 font-serif text-2xl md:text-3xl text-[#F7F3EC] tracking-wide text-center">
+                  <h3 className="mt-6 md:mt-8 font-serif text-2xl md:text-3xl text-[#F7F3EC] tracking-wide text-center">
                     {item.caption}
                   </h3>
-                  <div className="mt-3 mb-6 h-px w-24 bg-[#D4A24C]" />
-                  <GoldButton>{item.cta}</GoldButton>
                 </div>
               ))}
             </div>
