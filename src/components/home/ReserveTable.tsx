@@ -1,8 +1,9 @@
+"use client";
 import { useState, type SelectHTMLAttributes } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Wine, Sparkles, ChevronDown } from "lucide-react";
 import { GoldButton } from "../common/GoldButton";
-import { ReservationModal } from "../../pages/modals/ReservationModal";
+import { ReservationModal } from "@/components/modals/ReservationModal";
 import { toast } from "sonner";
 
 function Select({ children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {

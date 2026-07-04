@@ -1,6 +1,9 @@
+"use client";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Diamond } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, Diamond, User } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
 
 const links = [
   { label: "Home", href: "/" },
@@ -13,10 +16,11 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
 
   const handleLinkClick = (href: string) => {
-    if (href === '/' && location.pathname === '/') {
+    if (href === '/' && pathname === '/') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setOpen(false);
@@ -32,15 +36,15 @@ export function Navbar() {
   return (
     <nav
       className={
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 " +
-        (scrolled ? "bg-[#0D0B09]/70 backdrop-blur-xl border-b border-[#D4A24C]/20 shadow-[0_4px_30px_rgba(0,0,0,0.3)] py-2" : "bg-transparent py-4")
+        "hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-500 " +
+        (scrolled ? "bg-[#0D0B09]/70 backdrop-blur-xl border-b border-[#FFB846]/20 shadow-[0_4px_30px_rgba(0,0,0,0.3)] py-2" : "bg-transparent py-4")
       }
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between transition-all duration-500">
-        <Link to="/" className="flex items-center gap-2 group" onClick={() => handleLinkClick('/')}>
-          <Diamond size={20} className="text-[#D4A24C] group-hover:rotate-180 transition-transform duration-700" />
-          <span className="font-[Marcellus] text-[#D4A24C] text-2xl tracking-[0.15em] uppercase">
-            Fine Dining
+        <Link href="/" className="flex items-center gap-2 group" onClick={() => handleLinkClick('/')}>
+          <Diamond size={20} className="text-[#FFB846] group-hover:rotate-180 transition-transform duration-700" />
+          <span className="font-[Marcellus] text-[#FFB846] text-2xl tracking-[0.15em] uppercase">
+            Royal Cafe
           </span>
         </Link>
 
@@ -48,7 +52,7 @@ export function Navbar() {
           {links.map((l) => (
             <li key={l.href}>
               <Link
-                to={l.href}
+                href={l.href}
                 onClick={() => handleLinkClick(l.href)}
                 className="text-[#F7F3EC] text-[13px] font-medium tracking-[0.2em] uppercase hover:text-[#D4A24C] transition-colors relative py-2 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#D4A24C] hover:after:w-full after:transition-all after:duration-300"
               >
@@ -58,13 +62,22 @@ export function Navbar() {
           ))}
         </ul>
 
-        <button
-          className="md:hidden text-[#F7F3EC]"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={26} /> : <Menu size={26} />}
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+            className="text-[#F7F3EC] hover:text-[#D4A24C] transition-colors p-2 hidden md:block"
+            aria-label="Account"
+          >
+            <User size={22} />
+          </Link>
+          <button
+            className="md:hidden text-[#F7F3EC]"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={26} /> : <Menu size={26} />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -73,7 +86,7 @@ export function Navbar() {
             {links.map((l) => (
               <li key={l.href}>
                 <Link
-                  to={l.href}
+                  href={l.href}
                   className="block text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
                   onClick={() => handleLinkClick(l.href)}
                 >
@@ -81,6 +94,16 @@ export function Navbar() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+                className="flex items-center gap-2 text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
+                onClick={() => handleLinkClick(isAuthenticated ? '/profile' : `/auth?redirect=${pathname}`)}
+              >
+                <User size={18} />
+                {isAuthenticated ? "My Account" : "Sign In / Sign Up"}
+              </Link>
+            </li>
           </ul>
         </div>
       )}

@@ -1,3 +1,4 @@
+"use client";
 import { create } from 'zustand';
 import type { CartItem, FoodSize } from '@/lib/types';
 

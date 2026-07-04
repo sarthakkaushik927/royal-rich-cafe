@@ -7,6 +7,7 @@ export interface AuthService {
   signOut(): Promise<void>;
   getSession(): Promise<{ userId: string } | null>;
   getProfile(userId: string): Promise<Profile>;
+  updateProfile(userId: string, updates: Partial<Profile>): Promise<void>;
   onAuthChange(callback: (userId: string | null) => void): () => void;
 }
 
@@ -47,6 +48,14 @@ export const authService: AuthService = {
       .single();
     if (error) throw new Error(error.message);
     return data as Profile;
+  },
+
+  async updateProfile(userId, updates) {
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+    if (error) throw new Error(error.message);
   },
 
   onAuthChange(callback) {

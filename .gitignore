@@ -11,7 +11,16 @@ node_modules
 dist
 .env
 .env.local
+.env.production
+.env.development
 dist-ssr
+
+# Next.js
+.next/
+out/
+build/
+.swc/
+*.tsbuildinfo
 *.local
 
 # Editor directories and files

@@ -1,3 +1,4 @@
+"use client";
 import { useCallback } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
@@ -97,7 +98,7 @@ export function ExquisiteCuisine() {
                 >
                   <div className="p-2 border border-[#D4A24C]/40 rounded-sm bg-[#0D0B09]/60 backdrop-blur-sm shadow-2xl w-[90%] md:w-[90%] max-w-[400px] overflow-hidden group">
                     <img
-                      src={item.image}
+                      src={typeof item.image === 'string' ? item.image : (item.image as any).src}
                       alt={item.alt}
                       loading="lazy"
                       className="w-full h-[320px] md:h-[500px] object-cover rounded-sm transition-transform duration-700 group-hover:scale-110"

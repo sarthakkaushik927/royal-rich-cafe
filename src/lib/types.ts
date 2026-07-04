@@ -26,6 +26,7 @@ export interface Profile {
   id: string;
   full_name: string | null;
   phone: string | null;
+  address?: string | null;
   role: UserRole;
   created_at: string;
 }
@@ -46,6 +47,7 @@ export interface FoodItem {
   description: string | null;
   image_url: string | null;
   is_available: boolean;
+  is_recommended?: boolean;
   created_at: string;
 }
 
@@ -108,6 +110,7 @@ export interface OrderItem {
 export interface CartItem {
   food_item_id: string;
   name: string;
+  description?: string;
   image_url: string | null;
   size: FoodSize;
   quantity: number;
@@ -130,6 +133,7 @@ export const FoodItemFormSchema = z.object({
   description: z.string().optional(),
   category_id: z.string().uuid(),
   is_available: z.boolean(),
+  is_recommended: z.boolean().optional().default(false),
   price_small: z.number().min(0),
   price_medium: z.number().min(0),
   price_large: z.number().min(0),

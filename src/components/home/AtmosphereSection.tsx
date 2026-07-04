@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { GoldButton } from "../common/GoldButton";
 

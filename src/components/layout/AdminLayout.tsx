@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+"use client";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Menu, X, Diamond, Calendar } from 'lucide-react';
 import { authService } from '@/services/authService';
+import { AdminMobileBottomNav } from './AdminMobileBottomNav';
 
 const navItems = [
   { label: 'Overview', path: '/admin', icon: LayoutDashboard },
@@ -13,18 +16,63 @@ const navItems = [
 
 export function AdminLayout({ children }: { children?: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    let mounted = true;
+    
+    if (pathname === '/admin/login') {
+      setIsAuthorized(true);
+      return;
+    }
+
+    const checkAuth = async () => {
+      try {
+        const session = await authService.getSession();
+        if (!session) {
+          if (mounted) router.push('/admin/login');
+          return;
+        }
+        const profile = await authService.getProfile(session.userId);
+        if (profile.role !== 'admin') {
+          if (mounted) router.push('/'); // Kick non-admins to home
+          return;
+        }
+        if (mounted) setIsAuthorized(true);
+      } catch (err) {
+        if (mounted) router.push('/');
+      }
+    };
+    checkAuth();
+    return () => { mounted = false; };
+  }, [router, pathname]);
+
+  // Allow the layout (and sidebar) to render if we are on the login page,
+  // otherwise show the verifying screen until authorized.
+  const isLoginPage = pathname === '/admin/login';
+
+  if (!isAuthorized && !isLoginPage) {
+    return (
+      <div className="min-h-screen bg-[#0D0B09] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-4 text-[#D4A24C]">
+          <Diamond size={32} className="animate-bounce" />
+          <span className="text-sm tracking-widest uppercase">Verifying Clearance...</span>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogout = async () => {
     await authService.signOut();
-    navigate('/admin/login');
+    router.push('/admin/login');
   };
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-6 border-b border-[#D4A24C]/20">
-        <Link to="/" className="flex items-center gap-2 text-[#D4A24C]">
+        <Link href="/" className="flex items-center gap-2 text-[#D4A24C]">
           <Diamond size={20} />
           <span className="font-serif font-bold tracking-wider uppercase">Royal Admin</span>
         </Link>
@@ -32,12 +80,12 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
 
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = pathname === item.path;
           const Icon = item.icon;
           return (
             <Link
               key={item.path}
-              to={item.path}
+              href={item.path}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                 isActive
@@ -71,37 +119,23 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
         <SidebarContent />
       </aside>
 
-      {/* Mobile Header & Sidebar overlay */}
+      {/* Mobile Top Header (Just for Logo/Logout now) */}
       <div className="md:hidden">
         <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-[#D4A24C]/20 bg-[#141210] px-4">
-          <Link to="/" className="flex items-center gap-2 text-[#D4A24C]">
+          <Link href="/" className="flex items-center gap-2 text-[#D4A24C]">
             <Diamond size={20} />
             <span className="font-serif font-bold tracking-wider uppercase">Royal Admin</span>
           </Link>
-          <button onClick={() => setMobileOpen(true)} className="text-[#F7F3EC] p-2">
-            <Menu size={24} />
+          <button onClick={handleLogout} className="text-[#C7BFB2] hover:text-[#D4A24C] p-2 transition-colors">
+            <LogOut size={20} />
           </button>
         </header>
-
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-            <aside className="relative w-64 bg-[#141210] border-r border-[#D4A24C]/20 h-full flex flex-col">
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 p-2 text-[#C7BFB2] hover:text-white"
-              >
-                <X size={20} />
-              </button>
-              <SidebarContent />
-            </aside>
-          </div>
-        )}
+        <AdminMobileBottomNav />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-[#0D0B09] pt-16 md:pt-0">
-        {children || <Outlet />}
+      <main className="flex-1 overflow-y-auto bg-[#0D0B09] pt-16 md:pt-0 pb-24 md:pb-0">
+        {children}
       </main>
     </div>
   );

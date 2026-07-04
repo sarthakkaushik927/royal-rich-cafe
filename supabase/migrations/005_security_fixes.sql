@@ -22,11 +22,11 @@ REVOKE EXECUTE ON FUNCTION public.recompute_order_total() FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.recompute_order_total() FROM anon;
 REVOKE EXECUTE ON FUNCTION public.recompute_order_total() FROM authenticated;
 
--- get_user_role (Used in RLS, should be secure)
+-- get_user_role (Used in RLS, MUST remain executable by anon due to policy evaluation)
 ALTER FUNCTION public.get_user_role() SET search_path = public;
-REVOKE EXECUTE ON FUNCTION public.get_user_role() FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.get_user_role() FROM anon;
-GRANT EXECUTE ON FUNCTION public.get_user_role() TO authenticated;
+-- We do NOT revoke from PUBLIC/anon because RLS policies like "Admins manage food items" 
+-- use get_user_role() and apply to anon users during SELECTs. If revoked, anon users get permission denied.
+GRANT EXECUTE ON FUNCTION public.get_user_role() TO PUBLIC;
 
 
 -- 2. Fix Overly Permissive RLS Policies (Always True)
@@ -52,12 +52,12 @@ DROP POLICY IF EXISTS "Anyone can insert order items" ON public.order_items;
 CREATE POLICY "Anyone can insert order items" 
   ON public.order_items FOR INSERT 
   WITH CHECK (
-    -- Only allow inserting items into orders that are currently 'pending'.
-    -- This prevents attackers from injecting items into already confirmed/paid orders.
+    -- Only allow inserting items into orders that are currently 'pending' or 'confirmed'.
+    -- Our frontend currently creates orders with 'confirmed' status immediately.
     EXISTS (
       SELECT 1 FROM public.orders 
       WHERE orders.id = order_items.order_id 
-      AND orders.status = 'pending'
+      AND orders.status IN ('pending', 'confirmed')
     )
   );
 

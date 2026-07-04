@@ -1,12 +1,28 @@
-import { useState } from "react";
+"use client";
+import { useState, useEffect, useRef } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const constraintsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-200 flex flex-col items-end">
+    <>
+      <div ref={constraintsRef} className="fixed inset-4 pointer-events-none z-0" />
+      <motion.div 
+        drag
+        dragConstraints={constraintsRef}
+      dragElastic={0.2}
+      className="fixed bottom-[90px] md:bottom-6 right-6 z-[200] flex flex-col items-end cursor-grab active:cursor-grabbing"
+    >
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -14,7 +30,8 @@ export function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="mb-4 w-80 bg-[#0D0B09]/50 backdrop-blur-2xl border border-[#D4A24C]/20 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden"
+            className="mb-4 w-80 bg-[#0D0B09]/50 backdrop-blur-2xl border border-[#D4A24C]/20 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden cursor-auto"
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="bg-[#D4A24C]/20 backdrop-blur-md border-b border-[#D4A24C]/30 p-4 flex items-center justify-between">
@@ -59,6 +76,7 @@ export function Chatbot() {
         <MessageCircle size={28} className={isOpen ? "hidden" : "block"} />
         <X size={28} className={isOpen ? "block" : "hidden"} />
       </button>
-    </div>
+    </motion.div>
+    </>
   );
 }

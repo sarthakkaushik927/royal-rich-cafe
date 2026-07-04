@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState, useCallback } from 'react';
 import { authService } from '@/services/authService';
 import type { Profile } from '@/lib/types';

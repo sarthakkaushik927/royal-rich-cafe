@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { Diamond } from "lucide-react";
 import { SectionDivider } from "../common/SectionDivider";
