@@ -55,6 +55,8 @@ export default function Page() {
     },
     enabled: isMounted,
     refetchOnMount: true,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Fetch table bookings
@@ -82,6 +84,8 @@ export default function Page() {
     },
     enabled: isMounted,
     refetchOnMount: true,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   if (!isMounted) {
