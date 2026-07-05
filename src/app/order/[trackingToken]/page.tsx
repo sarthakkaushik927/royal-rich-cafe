@@ -270,9 +270,14 @@ export default function Page() {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-6">
+                  <div className="mt-6 overflow-x-auto pb-4 -mx-2 px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        display: none;
+                      }
+                    `}</style>
                     {/* Progress steps */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between min-w-[450px]">
                       {steps.map((step, i) => {
                         const currentIdx = getStepIndex(order.status);
                         const isDone = i <= currentIdx;

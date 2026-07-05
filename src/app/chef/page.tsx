@@ -80,12 +80,19 @@ function KitchenOrderCard({ order }: { order: Order }) {
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-[#D4A24C] text-sm font-semibold">
-              {order.table_number ? `Table ${order.table_number}` : 'Table Online'}
+              {order.table_number ? (order.table_number.toLowerCase().includes('table') ? order.table_number : `Table ${order.table_number}`) : 'Table Online'}
             </p>
-            <p className="text-[#555] text-[11px] font-mono mt-0.5">
-              #{order.id.slice(0, 8).toUpperCase()} &nbsp;|&nbsp;{' '}
-              {order.order_type.replace('_', '-').toUpperCase()}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <button 
+                onClick={() => setIsDetailsOpen(true)}
+                className="text-[#555] text-[11px] font-mono hover:text-[#D4A24C] underline underline-offset-2 decoration-[#555] hover:decoration-[#D4A24C] transition-colors cursor-pointer"
+              >
+                #{order.id.slice(0, 8).toUpperCase()}
+              </button>
+              <span className="text-[#555] text-[11px] font-mono">
+                | {order.order_type.replace('_', '-').toUpperCase()}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-1.5 text-[#555] text-xs">
             <Clock size={12} />
@@ -96,22 +103,30 @@ function KitchenOrderCard({ order }: { order: Order }) {
         </div>
 
         {/* Items */}
-        <div className="space-y-3 mb-5">
-          {order.items?.map((item) => {
+        <div 
+          className="space-y-3 mb-5 cursor-pointer group"
+          onClick={() => setIsDetailsOpen(true)}
+        >
+          {order.items?.slice(0, 2).map((item) => {
             const foodItem = item.food_item as { name?: string; description?: string } | undefined;
             return (
-              <div key={item.id}>
+              <div key={item.id} className="group-hover:opacity-80 transition-opacity">
                 <p className="text-[#F7F3EC] text-sm font-semibold">
                   {item.quantity}x {foodItem?.name ?? 'Item'}
                 </p>
                 {foodItem?.description && (
-                  <p className="text-[#555] text-[11px] mt-0.5 leading-relaxed">
+                  <p className="text-[#555] text-[11px] mt-0.5 leading-relaxed line-clamp-2">
                     Ingredients: {foodItem.description}
                   </p>
                 )}
               </div>
             );
           })}
+          {order.items && order.items.length > 2 && (
+            <p className="text-[#D4A24C] text-[11px] font-medium pt-1">
+              + {order.items.length - 2} more items...
+            </p>
+          )}
         </div>
 
         {/* Footer */}
