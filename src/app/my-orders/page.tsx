@@ -23,7 +23,7 @@ import { BookingHistoryCard } from '@/components/orders/BookingHistoryCard';
 export default function Page() {
   const [activeTab, setActiveTab] = useState<'orders' | 'bookings'>('orders');
   const router = useRouter();
-  const { isAuthenticated, userId, profile, userEmail } = useAuth();
+  const { isAuthenticated, userId, profile, userEmail, loading: authLoading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function Page() {
 
   // Fetch food orders
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery({
-    queryKey: ['my-orders', isAuthenticated, userId],
+    queryKey: ['my-orders', isAuthenticated, userId, profile?.phone],
     queryFn: async () => {
       let allOrders: any[] = [];
 
@@ -45,17 +45,24 @@ export default function Page() {
       
       // If logged in, fetch all orders tied to this account from DB
       if (isAuthenticated && userId) {
+        // 1. By customer_id (new orders, post-fix)
         const userOrders = await orderService.getOrdersByCustomer(userId);
         userOrders.forEach(uo => {
-          if (!allOrders.some(o => o.id === uo.id)) {
-            allOrders.push(uo);
-          }
+          if (!allOrders.some(o => o.id === uo.id)) allOrders.push(uo);
         });
+
+        // 2. By email (old guest orders placed before customer_id was stored)
+        if (userEmail) {
+          const emailOrders = await orderService.getOrdersByEmail(userEmail);
+          emailOrders.forEach(eo => {
+            if (!allOrders.some(o => o.id === eo.id)) allOrders.push(eo);
+          });
+        }
       }
       
       return allOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     },
-    enabled: isMounted,
+    enabled: isMounted && !authLoading,
     refetchOnMount: true,
     staleTime: 0,
     gcTime: 0,
@@ -63,7 +70,7 @@ export default function Page() {
 
   // Fetch table bookings
   const { data: bookings = [], isLoading: bookingsLoading, error: bookingsError } = useQuery({
-    queryKey: ['my-bookings', isAuthenticated, userId],
+    queryKey: ['my-bookings', isAuthenticated, userId, userEmail],
     queryFn: async () => {
       let allRes: any[] = [];
       const stored = localStorage.getItem('royal_cafe_reservations');
@@ -84,7 +91,7 @@ export default function Page() {
       
       return allRes.sort((a, b) => new Date(b.reservation_date).getTime() - new Date(a.reservation_date).getTime());
     },
-    enabled: isMounted,
+    enabled: isMounted && !authLoading,
     refetchOnMount: true,
     staleTime: 0,
     gcTime: 0,

@@ -28,7 +28,7 @@ export default function CheckoutPage() {
   const totalAmount = useCartStore((s) => s.totalAmount());
   const clearCart = useCartStore((s) => s.clearCart);
   const [submitting, setSubmitting] = useState(false);
-  const { isAuthenticated, loading, userId } = useAuth();
+  const { isAuthenticated, loading, userId, userEmail } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   const {
@@ -76,6 +76,7 @@ export default function CheckoutPage() {
         customer_id: userId ?? undefined,
         guest_name: data.guest_name,
         guest_phone: data.guest_phone,
+        guest_email: userEmail ?? undefined,
         order_type: data.order_type,
         table_number: data.order_type === 'dine_in' ? data.table_number : undefined,
         delivery_address: data.order_type === 'delivery' ? data.delivery_address : undefined,

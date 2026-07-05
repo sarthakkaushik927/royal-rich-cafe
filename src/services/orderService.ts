@@ -5,6 +5,7 @@ export interface CreateOrderInput {
   customer_id?: string;
   guest_name?: string;
   guest_phone?: string;
+  guest_email?: string;
   order_type: 'dine_in' | 'takeaway' | 'delivery';
   table_number?: string;
   delivery_address?: string;
@@ -16,6 +17,7 @@ export interface OrderService {
   getByTrackingToken(token: string): Promise<Order>;
   getOrdersByTrackingTokens(tokens: string[]): Promise<Order[]>;
   getOrdersByCustomer(customerId: string): Promise<Order[]>;
+  getOrdersByEmail(email: string): Promise<Order[]>;
   getAllOrders(filters?: { status?: OrderStatus; date?: string }): Promise<Order[]>;
   updateStatus(orderId: string, status: OrderStatus, reason?: string): Promise<void>;
   getActiveKitchenOrders(): Promise<Order[]>;
@@ -29,6 +31,7 @@ export const orderService: OrderService = {
       customer_id: input.customer_id ?? null,
       guest_name: input.guest_name ?? null,
       guest_phone: input.guest_phone ?? null,
+      guest_email: input.guest_email ?? null,
       order_type: input.order_type,
       table_number: input.table_number ?? null,
       delivery_address: input.delivery_address ?? null,
@@ -99,6 +102,16 @@ export const orderService: OrderService = {
       .from('orders')
       .select('*')
       .eq('customer_id', customerId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return data as Order[];
+  },
+
+  async getOrdersByEmail(email) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('guest_email', email)
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return data as Order[];
