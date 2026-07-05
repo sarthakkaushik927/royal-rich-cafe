@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Menu, X, Diamond, Calendar } from 'lucide-react';
@@ -33,17 +34,17 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
       try {
         const session = await authService.getSession();
         if (!session) {
-          if (mounted) router.push('/admin/login');
+          if (mounted) router.replace('/admin/login');
           return;
         }
         const profile = await authService.getProfile(session.userId);
         if (profile.role !== 'admin') {
-          if (mounted) router.push('/admin/login'); // Redirect non-admins to login
+          if (mounted) router.replace('/admin/login'); // Redirect non-admins to login
           return;
         }
         if (mounted) setIsAuthorized(true);
       } catch (err) {
-        if (mounted) router.push('/');
+        if (mounted) router.replace('/');
       }
     };
     checkAuth();
@@ -67,7 +68,7 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
 
   const handleLogout = async () => {
     await authService.signOut();
-    router.push('/admin/login');
+    router.replace('/admin/login');
   };
 
   return (
@@ -118,9 +119,17 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
         </div>
 
         {/* Content Area */}
-        <main className="animate-fade-in">
-          {children}
-        </main>
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={pathname}
+            initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
       </div>
       
       {/* Mobile nav fallback if needed */}

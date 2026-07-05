@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, use } from 'react';
 import { Search, Flame, Clock, ShoppingBag, Eye, HelpCircle } from 'lucide-react';
@@ -211,7 +211,7 @@ function MenuPage() {
                         <h3 className="font-serif text-lg font-bold tracking-wide text-luxury-accent">
                           {item.name}
                         </h3>
-                        <span className="font-serif text-base font-bold text-luxury-gold">₹{priceDisplay}</span>
+                        <span className="font-serif text-base font-bold text-luxury-gold">â‚¹{priceDisplay}</span>
                       </div>
                       <p className="text-luxury-textGrey text-xs leading-relaxed font-light line-clamp-2">
                         {item.description}
@@ -265,7 +265,7 @@ function MenuPage() {
               onClick={() => setSelectedItem(null)}
               className="md:hidden absolute top-3 right-3 z-10 bg-black/50 backdrop-blur p-2 rounded-full text-white hover:text-luxury-gold shadow-lg"
             >
-              ✕
+              âœ•
             </button>
             
             {/* Left media */}
@@ -294,7 +294,7 @@ function MenuPage() {
                     onClick={() => setSelectedItem(null)}
                     className="hidden md:block p-1 hover:bg-white/5 rounded text-luxury-accent/60 hover:text-luxury-gold transition"
                   >
-                    ✕
+                    âœ•
                   </button>
                 </div>
 
@@ -338,7 +338,7 @@ function MenuPage() {
                             : 'bg-black/60 border-luxury-gold/20 text-luxury-accent/70 hover:border-luxury-gold/50'
                         }`}
                       >
-                        {p.size} <span className="block mt-1 font-bold">₹{p.price}</span>
+                        {p.size} <span className="block mt-1 font-bold">â‚¹{p.price}</span>
                       </button>
                     ))}
                   </div>
@@ -398,7 +398,7 @@ function MenuPage() {
               <div className="border-t border-luxury-gold/10 pt-4 flex flex-col space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="font-serif text-lg font-bold text-luxury-gold">
-                    ₹{(selectedItem.prices.find(p => p.size === selectedSize)?.price || 0) * quantity}
+                    â‚¹{(selectedItem.prices.find(p => p.size === selectedSize)?.price || 0) * quantity}
                   </span>
                   
                   {/* Quantity selector */}

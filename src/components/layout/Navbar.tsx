@@ -17,6 +17,11 @@ export function Navbar() {
   const cartCount = useCartStore((s) => s.totalItems());
   const openCart = useCartStore((s) => s.openCart);
   const tableNum = searchParams.get('table');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,7 +107,7 @@ export function Navbar() {
                 </Link>
               ))}
               <Link
-                href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+                href={isMounted && isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
                 title="My Profile"
                 className="p-1 text-gray-500 hover:text-luxury-gold transition"
               >
@@ -125,7 +130,7 @@ export function Navbar() {
               className="relative p-2 text-gray-300 hover:text-luxury-gold transition duration-300"
             >
               <ShoppingBag size={20} />
-              {cartCount > 0 && (
+              {isMounted && cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-luxury-gold text-luxury-bg text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -148,7 +153,7 @@ export function Navbar() {
               className="relative p-1.5 text-gray-300 hover:text-luxury-gold"
             >
               <ShoppingBag size={20} />
-              {cartCount > 0 && (
+              {isMounted && cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-luxury-gold text-luxury-bg text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -186,11 +191,11 @@ export function Navbar() {
             })}
             
             <Link
-              href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+              href={isMounted && isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
               onClick={() => setIsOpen(false)}
               className="block text-center uppercase tracking-widest text-sm py-3 transition text-gray-300 hover:text-white"
             >
-              {isAuthenticated ? "My Account" : "Sign In / Sign Up"}
+              {isMounted && isAuthenticated ? "My Account" : "Sign In / Sign Up"}
             </Link>
 
             <div className="pt-4 flex justify-center">

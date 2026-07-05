@@ -140,17 +140,17 @@ export default function Page() {
       try {
         const session = await authService.getSession();
         if (!session) {
-          if (mounted) router.push('/chef/login');
+          if (mounted) router.replace('/chef/login');
           return;
         }
         const profile = await authService.getProfile(session.userId);
         if (profile.role !== 'chef' && profile.role !== 'admin') {
-          if (mounted) router.push('/chef/login');
+          if (mounted) router.replace('/chef/login');
           return;
         }
         if (mounted) setIsAuthorized(true);
       } catch (err) {
-        if (mounted) router.push('/');
+        if (mounted) router.replace('/');
       }
     };
     checkAuth();
@@ -159,7 +159,7 @@ export default function Page() {
 
   const handleLogout = async () => {
     await authService.signOut();
-    router.push('/chef/login');
+    router.replace('/chef/login');
   };
 
   // Group orders by status
