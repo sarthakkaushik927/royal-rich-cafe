@@ -28,7 +28,7 @@ export default function CheckoutPage() {
   const totalAmount = useCartStore((s) => s.totalAmount());
   const clearCart = useCartStore((s) => s.clearCart);
   const [submitting, setSubmitting] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, userId } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   const {
@@ -73,6 +73,7 @@ export default function CheckoutPage() {
     setSubmitting(true);
     try {
       const order = await orderService.createOrder({
+        customer_id: userId ?? undefined,
         guest_name: data.guest_name,
         guest_phone: data.guest_phone,
         order_type: data.order_type,

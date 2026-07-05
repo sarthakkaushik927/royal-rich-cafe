@@ -35,19 +35,21 @@ export default function Page() {
     queryKey: ['my-orders', isAuthenticated, userId],
     queryFn: async () => {
       let allOrders: any[] = [];
+
+      // Fetch by tracking tokens from localStorage (works for guests too)
       const stored = localStorage.getItem('royal_cafe_orders');
       const tokens = stored ? JSON.parse(stored) : [];
       if (tokens.length > 0) {
         allOrders = await orderService.getOrdersByTrackingTokens(tokens);
       }
       
+      // If logged in, fetch all orders tied to this account from DB
       if (isAuthenticated && userId) {
-        const dbOrders = await orderService.getAllOrders();
-        const userOrders = dbOrders.filter(o => o.customer_id === userId || (profile?.phone && o.guest_phone === profile.phone) || (profile?.full_name && o.guest_name === profile.full_name));
+        const userOrders = await orderService.getOrdersByCustomer(userId);
         userOrders.forEach(uo => {
-            if (!allOrders.some(o => o.id === uo.id)) {
-                allOrders.push(uo);
-            }
+          if (!allOrders.some(o => o.id === uo.id)) {
+            allOrders.push(uo);
+          }
         });
       }
       
