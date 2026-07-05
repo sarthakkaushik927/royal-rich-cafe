@@ -66,7 +66,15 @@ export function AdsCarousel({ ads, onSelectItem }: AdsCarouselProps) {
             {ad.subtitle && (
               <p className="mt-2 text-[#C7BFB2]">{ad.subtitle}</p>
             )}
-            <button className="mt-4 inline-flex items-center gap-2 rounded-[4px] bg-[#D4A24C] px-6 py-2.5 text-sm font-medium text-[#1A1410] transition-all hover:bg-[#c8963f] hover:scale-[1.02]">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (ad.food_item) {
+                  onSelectItem(ad.food_item);
+                }
+              }}
+              className="mt-4 inline-flex items-center gap-2 rounded-[4px] bg-[#D4A24C] px-6 py-2.5 text-sm font-medium text-[#1A1410] transition-all hover:bg-[#c8963f] hover:scale-[1.02]"
+            >
               Order Now
             </button>
           </div>

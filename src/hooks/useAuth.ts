@@ -5,18 +5,36 @@ import type { Profile } from '@/lib/types';
 
 export function useAuth() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     authService.getSession().then((session) => {
-      setUserId(session?.userId ?? null);
-      setLoading(false);
+      // getSession currently only returns userId. Let's fix authService to return email or we can use supabase directly here
+      // But authService is defined in another file. Let's just fetch it here
+      import('@/lib/supabaseClient').then(({ supabase }) => {
+        supabase.auth.getSession().then(({ data }) => {
+          setUserId(data.session?.user?.id ?? null);
+          setUserEmail(data.session?.user?.email ?? null);
+          setLoading(false);
+        });
+      });
     });
 
     const unsub = authService.onAuthChange((id) => {
-      setUserId(id);
-      if (!id) setProfile(null);
+      if (!id) {
+        setUserId(null);
+        setUserEmail(null);
+        setProfile(null);
+      } else {
+        setUserId(id);
+        import('@/lib/supabaseClient').then(({ supabase }) => {
+          supabase.auth.getUser().then(({ data }) => {
+            setUserEmail(data.user?.email ?? null);
+          });
+        });
+      }
     });
 
     return unsub;
@@ -30,13 +48,15 @@ export function useAuth() {
   const signIn = useCallback(async (email: string, password: string) => {
     const result = await authService.signIn(email, password);
     setUserId(result.userId);
+    setUserEmail(email);
   }, []);
 
   const signOut = useCallback(async () => {
     await authService.signOut();
     setUserId(null);
+    setUserEmail(null);
     setProfile(null);
   }, []);
 
-  return { userId, profile, loading, signIn, signOut, isAuthenticated: !!userId };
+  return { userId, userEmail, profile, loading, signIn, signOut, isAuthenticated: !!userId };
 }

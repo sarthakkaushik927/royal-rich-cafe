@@ -58,7 +58,7 @@ export default function Page() {
   });
 
   return (
-    <div className="p-6 md:p-10 space-y-6">
+    <div className="animate-fade-in pt-4 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl md:text-4xl text-[#F7F3EC] mb-1">Table Reservations</h1>
@@ -68,23 +68,23 @@ export default function Page() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg border border-[#D4A24C]/15 bg-[#141210]">
+        <div className="p-4 rounded-lg glass-card">
           <span className="block text-xs uppercase tracking-wider text-[#C7BFB2] mb-1">Total Bookings</span>
           <span className="font-serif text-2xl text-[#F7F3EC] font-semibold">{reservations.length}</span>
         </div>
-        <div className="p-4 rounded-lg border border-[#D4A24C]/15 bg-[#141210]">
+        <div className="p-4 rounded-lg glass-card">
           <span className="block text-xs uppercase tracking-wider text-emerald-400 mb-1">Confirmed/Active</span>
           <span className="font-serif text-2xl text-emerald-400 font-semibold">
             {reservations.filter((r) => r.status === 'confirmed').length}
           </span>
         </div>
-        <div className="p-4 rounded-lg border border-[#D4A24C]/15 bg-[#141210]">
+        <div className="p-4 rounded-lg glass-card">
           <span className="block text-xs uppercase tracking-wider text-[#D4A24C] mb-1">Attended</span>
           <span className="font-serif text-2xl text-[#D4A24C] font-semibold">
             {reservations.filter((r) => r.status === 'attended').length}
           </span>
         </div>
-        <div className="p-4 rounded-lg border border-[#D4A24C]/15 bg-[#141210]">
+        <div className="p-4 rounded-lg glass-card">
           <span className="block text-xs uppercase tracking-wider text-red-400 mb-1">Cancelled</span>
           <span className="font-serif text-2xl text-red-400 font-semibold">
             {reservations.filter((r) => r.status === 'cancelled').length}
@@ -119,7 +119,7 @@ export default function Page() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search name, phone, code..."
-            className="w-full h-10 pl-10 pr-4 rounded-lg border border-[#D4A24C]/15 bg-[#141210] text-sm text-[#F7F3EC] placeholder:text-[#C7BFB2]/40 outline-none focus:border-[#D4A24C]/40 transition-colors"
+            className="w-full h-10 pl-10 pr-4 rounded-lg border border-[#D4A24C]/15 bg-black/60 text-sm text-[#F7F3EC] placeholder:text-[#C7BFB2]/40 outline-none focus:border-[#D4A24C]/40 transition-colors"
           />
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function Page() {
           Failed to load reservations database.
         </div>
       ) : filteredReservations.length === 0 ? (
-        <div className="text-center py-20 border border-[#D4A24C]/10 rounded-lg bg-[#141210]/5 text-[#C7BFB2]">
+        <div className="text-center py-20 border border-[#D4A24C]/10 rounded-lg bg-black/40 text-[#C7BFB2]">
           No matching reservations found.
         </div>
       ) : (
@@ -145,7 +145,7 @@ export default function Page() {
               layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="border border-[#D4A24C]/15 rounded-lg bg-[#141210] p-6 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between gap-6"
+              className="rounded-lg glass-card p-6 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between gap-6"
             >
               {/* Left Column: Code & Guest */}
               <div className="space-y-2">
@@ -184,7 +184,7 @@ export default function Page() {
 
               {/* Middle Column: Details & Payment */}
               <div className="space-y-2 md:w-64">
-                <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center gap-1 text-[#C7BFB2]">
                     <Calendar size={12} className="text-[#D4A24C]" />
                     <span>{res.reservation_date}</span>
@@ -196,6 +196,12 @@ export default function Page() {
                   <div className="flex items-center gap-1 text-[#C7BFB2]">
                     <Users size={12} className="text-[#D4A24C]" />
                     <span>{res.guests_count} Guests</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[#C7BFB2]">
+                    <span className="text-[#D4A24C] font-bold border border-[#D4A24C]/30 px-1 rounded">F{res.floor_number || 1}</span>
+                    <span className="truncate" title={res.selected_seats?.join(', ') || 'Any'}>
+                      S: {res.selected_seats?.length ? res.selected_seats.join(', ') : 'Any'}
+                    </span>
                   </div>
                 </div>
 

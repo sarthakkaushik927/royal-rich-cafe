@@ -33,11 +33,42 @@
   --color-ember: var(--ember);
   --color-ember-bright: var(--ember-bright);
   --color-panel: var(--panel);
+  --color-luxury-bg: var(--luxury-bg);
+  --color-luxury-dark: var(--luxury-dark);
+  --color-luxury-card: var(--luxury-card);
+  --color-luxury-gold: var(--luxury-gold);
+  --color-luxury-bronze: var(--luxury-bronze);
+  --color-luxury-warm-gold: var(--luxury-warm-gold);
+  --color-luxury-accent: var(--luxury-accent);
+  --color-luxury-text-grey: var(--luxury-text-grey);
   --font-script: var(--font-script);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
   --shadow-gold: 0 0 40px oklch(0.75 0.14 75 / 0.25);
   --shadow-ember: 0 10px 40px -10px oklch(0.55 0.18 40 / 0.5);
+
+  --animate-gold-shine: shine 3s ease-in-out infinite;
+  --animate-fade-in: fadeIn 1s ease-out forwards;
+  --animate-slide-up: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-pulse-glow: pulseGlow 2s ease-in-out infinite;
+
+  @keyframes shine {
+    0% { transform: translateX(-100%) }
+    50% { transform: translateX(100%) }
+    100% { transform: translateX(100%) }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0 }
+    100% { opacity: 1 }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(40px); opacity: 0 }
+    100% { transform: translateY(0); opacity: 1 }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.3; filter: blur(40px) }
+    50% { opacity: 0.6; filter: blur(60px) }
+  }
 }
 
 :root {
@@ -74,9 +105,19 @@
   --ring: #FFB846;
 
   --font-script: "Great Vibes", cursive;
-  --font-serif: "Cormorant Garamond", "Playfair Display", serif;
-  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", "Playfair Display", "Cinzel", serif;
+  --font-sans: "Poppins", "Inter", "Manrope", "Outfit", system-ui, sans-serif;
   --font-display: "Marcellus", serif;
+
+  /* Luxury Theme Variables */
+  --luxury-bg: #0B0B0B;
+  --luxury-dark: #111111;
+  --luxury-card: #1C1C1C;
+  --luxury-gold: #D4AF37;
+  --luxury-bronze: #B8893C;
+  --luxury-warm-gold: #CFA15C;
+  --luxury-accent: #FFF8E7;
+  --luxury-text-grey: #A0A0A0;
 }
 
 .dark {
@@ -150,3 +191,71 @@
     box-shadow: var(--shadow-gold);
   }
 }
+
+@utility glass-card {
+  background: rgba(28, 28, 28, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+@utility glass-card-hover {
+  transition: all 0.3s ease;
+  &:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+    box-shadow: 0 12px 40px 0 rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+@utility gold-bg-gradient {
+  background: linear-gradient(135deg, #B8893C 0%, #D4AF37 50%, #CFA15C 100%);
+  color: #0B0B0B;
+}
+
+@utility radial-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.15), transparent 70%);
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility animate-fade-up {
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@utility animate-fade-up-delay-1 {
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+@utility animate-fade-up-delay-2 {
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+  opacity: 0;
+}
+
+@utility animate-fade-up-delay-3 {
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+  opacity: 0;
+}
+
+@layer base {
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+

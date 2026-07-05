@@ -1,51 +1,50 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { ShoppingBag, LayoutGrid, List, Search, ArrowLeft, UtensilsCrossed } from 'lucide-react';
-import { MobileHeader } from '@/components/home/MobileHeader';
-import { FoodItemCard } from '@/features/menu/FoodItemCard';
-import { AdsCarousel } from '@/features/menu/AdsCarousel';
-import { ItemSelectionModal } from '@/features/item-selection/ItemSelectionModal';
-import { FoodCardSkeleton } from '@/components/ui/Skeleton';
-import { CategoryGrid } from '@/features/menu/CategoryGrid';
+
+import React, { useState, useMemo, use } from 'react';
+import { Search, Flame, Clock, ShoppingBag, Eye, HelpCircle } from 'lucide-react';
 import { useCategories, useAllFoodItems } from '@/hooks/useFoodData';
-import { useActiveAds } from '@/hooks/useOrderData';
 import { useCartStore } from '@/hooks/useCartStore';
-import type { FoodItemWithPrices } from '@/lib/types';
+import type { FoodItemWithPrices, CartItem } from '@/lib/types';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 
-import { use } from 'react';
+export default function Page() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-[#111111] pt-32 pb-16 px-4 flex justify-center"><div className="w-8 h-8 border-4 border-[#D4A24C] border-t-transparent rounded-full animate-spin" /></div>}>
+      <MenuPage />
+    </React.Suspense>
+  );
+}
 
-export default function MenuPage({ 
-  params,
-  searchParams 
-}: { 
-  params?: Promise<{ categorySlug?: string[] }>,
-  searchParams?: Promise<{ search?: string }>
-}) {
-  const resolvedParams = params ? use(params) : {};
-  const resolvedSearchParams = searchParams ? use(searchParams) : {};
-  const urlCategorySlug = resolvedParams.categorySlug?.[0] ?? null;
-  const initialSearch = resolvedSearchParams.search ?? '';
+function MenuPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
   
+  const categoryParams = params?.categorySlug;
+  const urlCategorySlug = Array.isArray(categoryParams) ? categoryParams[0] : (categoryParams ?? null);
+  const initialSearch = searchParams?.get('search') ?? '';
+
+  const { data: categories = [], isLoading: catLoading } = useCategories();
+  const { data: allItems = [], isLoading: itemsLoading } = useAllFoodItems();
+  const addItemToCart = useCartStore(state => state.addItem);
+  const router = useRouter();
+
   const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(urlCategorySlug);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedItem, setSelectedItem] = useState<FoodItemWithPrices | null>(null);
 
-  const { data: categories = [], isLoading: catLoading } = useCategories();
-  const { data: allItems = [], isLoading: itemsLoading, error: itemsError } = useAllFoodItems();
-  const { data: ads = [] } = useActiveAds();
-  const totalCartItems = useCartStore((s) => s.totalItems());
-
-  const activeCategory = activeCategorySlug
-    ? categories.find((c) => c.slug === activeCategorySlug)
-    : null;
+  // Customization choices
+  const [quantity, setQuantity] = useState(1);
+  const [customNotes, setCustomNotes] = useState('');
+  const [prepStyle, setPrepStyle] = useState('Medium Rare');
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('small');
 
   const filteredItems = useMemo(() => {
     let items = allItems;
-    if (activeCategory) {
-      items = items.filter((i) => i.category_id === activeCategory.id);
+    if (activeCategorySlug) {
+      const activeCat = categories.find((c) => c.slug === activeCategorySlug);
+      if (activeCat) {
+        items = items.filter((i) => i.category_id === activeCat.id);
+      }
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -56,145 +55,382 @@ export default function MenuPage({
       );
     }
     return items.filter((i) => i.is_available);
-  }, [allItems, activeCategory, searchQuery]);
+  }, [allItems, categories, activeCategorySlug, searchQuery]);
+
+  const handleOpenDetailModal = (item: FoodItemWithPrices) => {
+    setSelectedItem(item);
+    setQuantity(1);
+    setCustomNotes('');
+    const hasSmall = item.prices.some(p => p.size === 'small');
+    setSelectedSize(hasSmall ? 'small' : item.prices[0]?.size || 'small');
+    setPrepStyle('Standard');
+  };
+
+  const handleConfirmAdd = () => {
+    if (selectedItem) {
+      const priceObj = selectedItem.prices.find(p => p.size === selectedSize) || selectedItem.prices[0];
+      const unitPrice = priceObj ? priceObj.price : 0;
+      
+      const customizationStr = `${prepStyle}${customNotes ? ` (${customNotes})` : ''}`;
+      
+      const cartItem: CartItem = {
+        food_item_id: selectedItem.id,
+        name: selectedItem.name,
+        description: customizationStr,
+        image_url: selectedItem.image_url,
+        size: selectedSize,
+        quantity: quantity,
+        unit_price: unitPrice
+      };
+      
+      addItemToCart(cartItem);
+      setSelectedItem(null);
+    }
+  };
+
+  const handleQuickAdd = (item: FoodItemWithPrices) => {
+    const priceObj = item.prices.find(p => p.size === 'small') || item.prices[0];
+    const unitPrice = priceObj ? priceObj.price : 0;
+    
+    addItemToCart({
+      food_item_id: item.id,
+      name: item.name,
+      description: '',
+      image_url: item.image_url,
+      size: priceObj?.size || 'small',
+      quantity: 1,
+      unit_price: unitPrice
+    });
+  };
 
   return (
-    <main className="min-h-screen bg-[#161718] font-sans pb-24">
-      <MobileHeader />
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12 space-y-6 pt-4">
-        {/* Ads Carousel */}
-        {/* Controls bar / Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          {(!activeCategorySlug && !searchQuery) ? (
-            <div className="flex items-center justify-between w-full">
-              <h2 className="text-white font-bold text-2xl tracking-wide">Categories</h2>
-              <button className="text-white text-sm font-medium hover:text-[#FFB846] transition-colors">
-                View all
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between w-full">
-              <button 
-                onClick={() => { setActiveCategorySlug(null); setSearchQuery(''); }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFB846]/10 border border-[#FFB846]/20 text-[#FFB846] hover:bg-[#FFB846]/20 transition-colors text-sm font-medium"
-              >
-                <ArrowLeft size={16} />
-                Back to Categories
-              </button>
-              
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search menu..."
-                  className="h-10 w-40 md:w-48 rounded-full border border-white/10 bg-black/20 pl-9 pr-4 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#FFB846]/40 transition-colors"
-                />
-              </div>
-            </div>
-          )}
+    <div className="pt-32 pb-24 bg-luxury-bg text-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Page Header */}
+        <div className="text-center space-y-4 mb-16">
+          <span className="text-xs uppercase tracking-[0.3em] text-luxury-gold font-sans font-medium block">
+            Michelin Star Catalog
+          </span>
+          <h1 className="font-serif text-4xl sm:text-6xl tracking-tight">
+            The Royal <span className="gold-text-gradient italic">Gastronomical Menu</span>
+          </h1>
+          <p className="max-w-xl mx-auto text-luxury-textGrey text-xs sm:text-sm uppercase tracking-wider font-light">
+            Every dish is handcrafted by our master chefs using organically farmed and globally sourced ingredients.
+          </p>
         </div>
 
-        {/* Food items grid/list */}
-        {itemsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <FoodCardSkeleton key={i} />
-            ))}
+        {/* Filter Controls Row */}
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-12 bg-luxury-dark/40 border border-luxury-gold/10 p-6 rounded-xl glass-card">
+          
+          {/* Search Box */}
+          <div className="relative w-full lg:w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-luxury-gold/50" size={18} />
+            <input
+              type="text"
+              placeholder="Search dishes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/60 border border-luxury-gold/20 text-white placeholder-luxury-textGrey/50 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:border-luxury-gold transition duration-300"
+            />
           </div>
-        ) : itemsError ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="rounded-full bg-red-500/10 p-4 mb-4">
-              <UtensilsCrossed size={32} className="text-red-400" />
-            </div>
-            <h3 className="font-serif text-xl text-[#F7F3EC] mb-2">Unable to load menu</h3>
-            <p className="text-sm text-[#C7BFB2] mb-4">Please check your connection and try again.</p>
+
+          {/* Category Selector Tabs */}
+          <div className="flex flex-wrap justify-center gap-2 w-full lg:w-auto">
             <button
-              onClick={() => window.location.reload()}
-              className="rounded-[4px] bg-[#D4A24C] px-6 py-2 text-sm font-medium text-[#1A1410] hover:bg-[#c8963f]"
+              onClick={() => setActiveCategorySlug(null)}
+              className={`px-4 py-2 rounded text-xs uppercase tracking-widest transition duration-300 font-sans ${
+                !activeCategorySlug
+                  ? 'bg-luxury-gold text-luxury-bg font-semibold'
+                  : 'bg-luxury-card hover:bg-luxury-gold/10 text-luxury-accent/80 border border-luxury-gold/10'
+              }`}
             >
-              Retry
+              All
             </button>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="rounded-full bg-[#D4A24C]/10 p-4 mb-4">
-              <UtensilsCrossed size={32} className="text-[#D4A24C]" />
-            </div>
-            <h3 className="font-serif text-xl text-[#F7F3EC] mb-2">No dishes found</h3>
-            <p className="text-sm text-[#C7BFB2]">
-              {searchQuery
-                ? 'Try a different search term'
-                : 'Menu items will appear here once they are added'}
-            </p>
-          </div>
-        ) : !activeCategorySlug && !searchQuery ? (
-          <>
-            <CategoryGrid categories={categories} onSelect={setActiveCategorySlug} />
-            
-            {ads.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mt-8"
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategorySlug(cat.slug)}
+                className={`px-4 py-2 rounded text-xs uppercase tracking-widest transition duration-300 font-sans ${
+                  activeCategorySlug === cat.slug
+                    ? 'bg-luxury-gold text-luxury-bg font-semibold'
+                    : 'bg-luxury-card hover:bg-luxury-gold/10 text-luxury-accent/80 border border-luxury-gold/10'
+                }`}
               >
-                <AdsCarousel ads={ads} onSelectItem={setSelectedItem} />
-              </motion.div>
-            )}
-          </>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredItems.map((item, i) => (
-              <FoodItemCard key={item.id} item={item} onSelect={setSelectedItem} index={i} />
+                {cat.name}
+              </button>
             ))}
+          </div>
+        </div>
+
+        {/* Menu Cards Grid */}
+        {itemsLoading ? (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             {Array.from({ length: 6 }).map((_, i) => (
+               <div key={i} className="h-96 bg-luxury-dark/50 animate-pulse rounded border border-luxury-gold/10"></div>
+             ))}
+           </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="text-center py-20 bg-luxury-dark/20 border border-luxury-gold/15 rounded-xl mt-8">
+            <HelpCircle size={48} className="text-luxury-gold/40 mx-auto mb-4" />
+            <h3 className="font-serif text-2xl text-luxury-accent">No Delicacies Found</h3>
+            <p className="text-luxury-textGrey text-sm mt-2">Adjust your filters or query and search again.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredItems.map((item, i) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.04 }}
-                onClick={() => setSelectedItem(item)}
-                className="flex items-center gap-4 cursor-pointer rounded-lg border border-[#D4A24C]/10 bg-linear-to-r from-[#141210] to-[#0D0B09] p-4 transition-all hover:border-[#D4A24C]/25"
-              >
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="h-16 w-16 rounded-lg object-cover shrink-0"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-[#D4A24C]/5">
-                    <ShoppingBag size={20} className="text-[#D4A24C]/30" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredItems.map((item) => {
+              const priceSmall = item.prices.find(p => p.size === 'small')?.price;
+              const priceDisplay = priceSmall ?? item.prices[0]?.price ?? 0;
+              const isBestSeller = item.is_recommended;
+              
+              return (
+                <div
+                  key={item.id}
+                  className="glass-card glass-card-hover rounded overflow-hidden flex flex-col justify-between group border-luxury-gold/5"
+                >
+                  {/* Media Layer */}
+                  <div className="relative h-[240px] overflow-hidden">
+                    <img
+                      src={item.image_url || '/placeholder.jpg'}
+                      alt={item.name}
+                      className="w-full h-full object-cover filter brightness-[0.85] group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-luxury-bg/90 via-transparent to-transparent"></div>
+                    
+                    {isBestSeller && (
+                      <span className="absolute top-4 right-4 bg-luxury-gold text-luxury-bg text-[8px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded shadow-lg">
+                        Best Seller
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif text-[#F7F3EC] truncate">{item.name}</h3>
-                  {item.description && (
-                    <p className="text-sm text-[#C7BFB2] truncate">{item.description}</p>
-                  )}
+
+                  {/* Info Layer */}
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-baseline">
+                        <h3 className="font-serif text-lg font-bold tracking-wide text-luxury-accent">
+                          {item.name}
+                        </h3>
+                        <span className="font-serif text-base font-bold text-luxury-gold">₹{priceDisplay}</span>
+                      </div>
+                      <p className="text-luxury-textGrey text-xs leading-relaxed font-light line-clamp-2">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    {/* Preparation metrics */}
+                    <div className="flex space-x-4 text-[10px] uppercase tracking-wider text-luxury-warmGold border-t border-luxury-gold/5 pt-4">
+                      <div className="flex items-center space-x-1">
+                        <Clock size={12} />
+                        <span>15-20 min</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Flame size={12} />
+                        <span>Hot</span>
+                      </div>
+                    </div>
+
+                    {/* Purchase / Inspect triggers */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <button
+                        onClick={() => handleOpenDetailModal(item)}
+                        className="py-2 px-3 border border-luxury-gold/20 hover:border-luxury-gold text-luxury-accent hover:text-luxury-gold text-[10px] uppercase tracking-widest font-sans rounded transition duration-300 flex items-center justify-center space-x-1"
+                      >
+                        <Eye size={12} />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenDetailModal(item)}
+                        className="py-2 px-3 bg-luxury-gold hover:opacity-90 text-luxury-bg font-sans font-bold text-[10px] uppercase tracking-widest rounded transition duration-300 flex items-center justify-center space-x-1"
+                      >
+                        <ShoppingBag size={12} />
+                        <span>Order Now</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  {item.prices.length > 0 && (
-                    <span className="text-[#D4A24C] font-medium">
-                      From ₹{Math.min(...item.prices.map((p) => p.price)).toFixed(0)}
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
+
       </div>
 
-      {/* Item selection modal */}
-      <ItemSelectionModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-    </main>
+      {/* DETAIL MODAL OVERLAY */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-luxury-dark border border-luxury-gold/25 w-full max-w-2xl rounded-xl overflow-hidden shadow-2xl animate-slide-up flex flex-col md:flex-row max-h-[85dvh] overflow-y-auto relative">
+            {/* Mobile Close Button */}
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="md:hidden absolute top-3 right-3 z-10 bg-black/50 backdrop-blur p-2 rounded-full text-white hover:text-luxury-gold shadow-lg"
+            >
+              ✕
+            </button>
+            
+            {/* Left media */}
+            <div className="w-full md:w-1/2 h-48 sm:h-64 md:h-auto relative shrink-0">
+              <img
+                src={selectedItem.image_url || '/placeholder.jpg'}
+                alt={selectedItem.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-luxury-dark opacity-90 hidden md:block"></div>
+            </div>
+
+            {/* Right details content */}
+            <div className="w-full md:w-1/2 p-6 pb-8 md:pb-6 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold tracking-wide text-luxury-accent">
+                      {selectedItem.name}
+                    </h2>
+                    <span className="text-[10px] text-luxury-gold font-sans uppercase tracking-widest font-semibold">
+                      {categories.find(c => c.id === selectedItem.category_id)?.name}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="hidden md:block p-1 hover:bg-white/5 rounded text-luxury-accent/60 hover:text-luxury-gold transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p className="text-luxury-textGrey text-xs leading-relaxed font-light">
+                  {selectedItem.description}
+                </p>
+
+                {/* Ingredients list */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-luxury-warmGold font-sans uppercase tracking-wider block font-bold">
+                    Key Ingredients
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(selectedItem.ingredients && selectedItem.ingredients.length > 0
+                      ? selectedItem.ingredients
+                      : ['Premium Quality', 'Organic Spices', 'Chef\'s Special']
+                    ).map((ing, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-black/60 text-luxury-accent/80 border border-luxury-gold/10 px-2.5 py-0.5 rounded-full text-[9px] font-sans"
+                      >
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Size Options */}
+                <div className="space-y-2 pt-2 border-t border-luxury-gold/10">
+                  <span className="text-[10px] text-luxury-warmGold font-sans uppercase tracking-wider block font-bold">
+                    Portion Size
+                  </span>
+                  <div className="flex gap-2">
+                    {selectedItem.prices.map((p) => (
+                      <button
+                        key={p.size}
+                        onClick={() => setSelectedSize(p.size)}
+                        className={`flex-1 py-2 text-xs uppercase tracking-widest rounded border transition ${
+                          selectedSize === p.size
+                            ? 'bg-luxury-gold/20 border-luxury-gold text-luxury-gold'
+                            : 'bg-black/60 border-luxury-gold/20 text-luxury-accent/70 hover:border-luxury-gold/50'
+                        }`}
+                      >
+                        {p.size} <span className="block mt-1 font-bold">₹{p.price}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Prep Customization options */}
+                <div className="space-y-2 pt-2 border-t border-luxury-gold/10">
+                  <span className="text-[10px] text-luxury-warmGold font-sans uppercase tracking-wider block font-bold">
+                    Preparation Preferences
+                  </span>
+                  {(selectedItem.preparation_options && selectedItem.preparation_options.length > 0) ? (
+                    <select
+                      value={prepStyle}
+                      onChange={(e) => setPrepStyle(e.target.value)}
+                      className="w-full bg-black/60 border border-luxury-gold/20 text-white px-3 py-2 rounded text-xs focus:outline-none focus:border-luxury-gold"
+                    >
+                      {selectedItem.preparation_options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : categories.find(c => c.id === selectedItem.category_id)?.slug === 'cafe' ? (
+                    <select
+                      value={prepStyle}
+                      onChange={(e) => setPrepStyle(e.target.value)}
+                      className="w-full bg-black/60 border border-luxury-gold/20 text-white px-3 py-2 rounded text-xs focus:outline-none focus:border-luxury-gold"
+                    >
+                      <option value="Whole Milk">Whole Milk</option>
+                      <option value="Oat Milk">Oat Milk</option>
+                      <option value="Almond Milk">Almond Milk</option>
+                      <option value="Decaf Espresso">Decaf Espresso</option>
+                    </select>
+                  ) : (
+                    <select
+                      value={prepStyle}
+                      onChange={(e) => setPrepStyle(e.target.value)}
+                      className="w-full bg-black/60 border border-luxury-gold/20 text-white px-3 py-2 rounded text-xs focus:outline-none focus:border-luxury-gold"
+                    >
+                      <option value="Mild Spiced">Mild Spiced</option>
+                      <option value="Medium Spiced">Medium Spiced</option>
+                      <option value="Extra Spicy">Extra Spicy</option>
+                      <option value="Jain (No Onion, No Garlic)">Jain (No Onion, No Garlic)</option>
+                      <option value="Less Oil / Butter">Less Oil / Butter</option>
+                    </select>
+                  )}
+                  
+                  <input
+                    type="text"
+                    placeholder="Allergies or special instructions..."
+                    value={customNotes}
+                    onChange={(e) => setCustomNotes(e.target.value)}
+                    className="w-full bg-black/60 border border-luxury-gold/20 text-white placeholder-luxury-textGrey/40 px-3 py-2 rounded text-xs focus:outline-none focus:border-luxury-gold transition duration-300 mt-2"
+                  />
+                </div>
+              </div>
+
+              {/* Order Actions footer inside modal */}
+              <div className="border-t border-luxury-gold/10 pt-4 flex flex-col space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-serif text-lg font-bold text-luxury-gold">
+                    ₹{(selectedItem.prices.find(p => p.size === selectedSize)?.price || 0) * quantity}
+                  </span>
+                  
+                  {/* Quantity selector */}
+                  <div className="flex items-center border border-luxury-gold/25 rounded bg-black/40 text-sm">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-3 py-1 text-luxury-accent/60 hover:text-luxury-gold transition"
+                    >
+                      -
+                    </button>
+                    <span className="px-3 font-semibold text-luxury-accent">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-3 py-1 text-luxury-accent/60 hover:text-luxury-gold transition"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleConfirmAdd}
+                  className="w-full py-3 bg-luxury-gold hover:opacity-90 text-luxury-bg font-sans font-bold text-xs uppercase tracking-widest rounded transition duration-300 flex items-center justify-center space-x-2"
+                >
+                  <ShoppingBag size={14} />
+                  <span>Confirm Addition</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

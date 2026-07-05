@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
@@ -93,14 +94,16 @@ export default function ProfilePage() {
                 {profile?.role === 'admin' ? 'Administrator' : profile?.role === 'chef' ? 'Head Chef' : 'Customer'}
               </p>
               
-              <button
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-[#D4A24C]/30 text-sm font-medium text-[#F7F3EC] hover:bg-[#D4A24C]/10 hover:border-[#D4A24C] transition-all disabled:opacity-50"
-              >
-                {isSigningOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
-                Sign Out
-              </button>
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                <button
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-[#D4A24C]/30 text-sm font-medium text-[#F7F3EC] hover:bg-[#D4A24C]/10 hover:border-[#D4A24C] transition-all disabled:opacity-50"
+                >
+                  {isSigningOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
 

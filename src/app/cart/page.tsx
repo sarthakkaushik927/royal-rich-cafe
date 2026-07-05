@@ -1,4 +1,5 @@
 "use client";
+import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
@@ -14,12 +15,21 @@ const sizeLabels: Record<FoodSize, string> = {
 };
 
 export default function CartPage() {
+  const [isMounted, setIsMounted] = React.useState(false);
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const totalAmount = useCartStore((s) => s.totalAmount());
   const totalItems = useCartStore((s) => s.totalItems());
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <main className="min-h-screen bg-[#0D0B09]" />;
+  }
 
   return (
     <main className="min-h-screen bg-[#0D0B09]">

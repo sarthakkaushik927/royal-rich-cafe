@@ -1,7 +1,6 @@
 "use client";
 
 import { CustomCursor } from "./CustomCursor";
-import { Chatbot } from "./Chatbot";
 import { Toaster } from "sonner";
 import { usePathname } from "next/navigation";
 
@@ -13,7 +12,6 @@ export function LayoutClientEffects() {
     <>
       <CustomCursor />
       <Toaster position="top-right" theme="dark" />
-      {!isAdmin && <Chatbot />}
     </>
   );
 }

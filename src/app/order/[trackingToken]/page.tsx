@@ -41,7 +41,8 @@ function OrderReceipt({ order }: { order: any }) {
       animate={{ opacity: 1, scale: 1 }}
       className="mt-6 rounded-lg border border-[#D4A24C]/30 bg-[#FAF8F5] p-8 text-[#1A1410] relative overflow-hidden shadow-2xl receipt-container"
     >
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
           nav, footer, .no-print, button, a {
             display: none !important;
@@ -211,13 +212,6 @@ export default function Page() {
 
       <section className="pt-24 pb-6 px-6 md:px-12 no-print">
         <div className="max-w-3xl mx-auto">
-          <Link
-            href="/menu"
-            className="inline-flex items-center gap-2 text-sm text-[#C7BFB2] hover:text-[#D4A24C] transition-colors mb-6"
-          >
-            <ArrowLeft size={16} />
-            Back to Menu
-          </Link>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="font-serif text-4xl text-[#F7F3EC] mb-2">Order Tracking</h1>
             <p className="text-[#C7BFB2]">Real-time updates on your order</p>
@@ -291,27 +285,24 @@ export default function Page() {
                               <motion.div
                                 animate={isCurrent ? { scale: [1, 1.15, 1] } : {}}
                                 transition={isCurrent ? { repeat: Infinity, duration: 2 } : {}}
-                                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
-                                  isDone
+                                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${isDone
                                     ? 'border-[#D4A24C] bg-[#D4A24C]/15 text-[#D4A24C]'
                                     : 'border-[#D4A24C]/15 text-[#C7BFB2]/40'
-                                }`}
+                                  }`}
                               >
                                 <Icon size={18} />
                               </motion.div>
                               <span
-                                className={`mt-2 text-[10px] uppercase tracking-wider ${
-                                  isDone ? 'text-[#D4A24C]' : 'text-[#C7BFB2]/40'
-                                }`}
+                                className={`mt-2 text-[10px] uppercase tracking-wider ${isDone ? 'text-[#D4A24C]' : 'text-[#C7BFB2]/40'
+                                  }`}
                               >
                                 {step.label}
                               </span>
                             </div>
                             {i < steps.length - 1 && (
                               <div
-                                className={`h-0.5 flex-1 mx-2 rounded transition-colors ${
-                                  i < currentIdx ? 'bg-[#D4A24C]' : 'bg-[#D4A24C]/10'
-                                }`}
+                                className={`h-0.5 flex-1 mx-2 rounded transition-colors ${i < currentIdx ? 'bg-[#D4A24C]' : 'bg-[#D4A24C]/10'
+                                  }`}
                               />
                             )}
                           </div>
@@ -420,7 +411,7 @@ export default function Page() {
         </div>
       </section>
 
-      <Footer />
+
     </main>
   );
 }

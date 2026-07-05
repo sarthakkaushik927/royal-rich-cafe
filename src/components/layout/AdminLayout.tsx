@@ -7,10 +7,11 @@ import { authService } from '@/services/authService';
 import { AdminMobileBottomNav } from './AdminMobileBottomNav';
 
 const navItems = [
-  { label: 'Overview', path: '/admin', icon: LayoutDashboard },
-  { label: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed },
-  { label: 'Advertisements', path: '/admin/ads', icon: Megaphone },
-  { label: 'All Orders', path: '/admin/orders', icon: ReceiptText },
+  { label: 'Analytics', path: '/admin', icon: LayoutDashboard },
+  { label: 'Menu CMS', path: '/admin/menu', icon: UtensilsCrossed },
+  { label: 'Inventory', path: '/admin/inventory', icon: Diamond },
+  { label: 'Ads CMS', path: '/admin/ads', icon: Megaphone },
+  { label: 'Orders', path: '/admin/orders', icon: ReceiptText },
   { label: 'Reservations', path: '/admin/reservations', icon: Calendar },
 ];
 
@@ -37,7 +38,7 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
         }
         const profile = await authService.getProfile(session.userId);
         if (profile.role !== 'admin') {
-          if (mounted) router.push('/'); // Kick non-admins to home
+          if (mounted) router.push('/admin/login'); // Redirect non-admins to login
           return;
         }
         if (mounted) setIsAuthorized(true);
@@ -69,74 +70,63 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
     router.push('/admin/login');
   };
 
-  const SidebarContent = () => (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center px-6 border-b border-[#D4A24C]/20">
-        <Link href="/" className="flex items-center gap-2 text-[#D4A24C]">
-          <Diamond size={20} />
-          <span className="font-serif font-bold tracking-wider uppercase">Royal Admin</span>
-        </Link>
-      </div>
-
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-        {navItems.map((item) => {
-          const isActive = pathname === item.path;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-[#D4A24C]/10 text-[#D4A24C]'
-                  : 'text-[#C7BFB2] hover:bg-white/5 hover:text-[#F7F3EC]'
-              }`}
-            >
-              <Icon size={18} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-
-      <div className="p-4 border-t border-[#D4A24C]/20">
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#C7BFB2] transition-colors hover:bg-red-500/10 hover:text-red-400"
-        >
-          <LogOut size={18} />
-          Sign Out
-        </button>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-[#0D0B09] flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-[#D4A24C]/20 bg-[#141210]">
-        <SidebarContent />
-      </aside>
-
-      {/* Mobile Top Header (Just for Logo/Logout now) */}
-      <div className="md:hidden">
-        <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-[#D4A24C]/20 bg-[#141210] px-4">
-          <Link href="/" className="flex items-center gap-2 text-[#D4A24C]">
-            <Diamond size={20} />
-            <span className="font-serif font-bold tracking-wider uppercase">Royal Admin</span>
-          </Link>
-          <button onClick={handleLogout} className="text-[#C7BFB2] hover:text-[#D4A24C] p-2 transition-colors">
-            <LogOut size={20} />
+    <div className="pt-32 pb-24 bg-[#0B0B0B] text-[#F7F3EC] min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header matching reference */}
+        <div className="flex items-center justify-between mb-10 border-b border-[#D4A24C]/10 pb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-[#D4A24C] text-[#0D0B09] rounded">
+              <Diamond size={28} />
+            </div>
+            <div>
+              <h1 className="font-serif text-2xl md:text-3xl font-bold tracking-wide">
+                Royal Rich <span className="text-[#D4A24C]">Administration Hub</span>
+              </h1>
+              <p className="text-[10px] uppercase tracking-widest text-[#C7BFB2] font-semibold">
+                Global content editor, stock levels, and operations panel
+              </p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-xs md:text-sm font-medium text-[#C7BFB2] transition-colors hover:text-red-400">
+             <LogOut size={20} />
+             <span className="hidden md:inline uppercase tracking-wider text-[10px] font-bold">Sign Out</span>
           </button>
-        </header>
+        </div>
+
+        {/* Dash Tabs matching reference */}
+        <div className="flex space-x-2 border-b border-[#D4A24C]/10 mb-8 pb-1 overflow-x-auto no-scrollbar">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path || (item.path !== '/admin' && pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition duration-300 whitespace-nowrap flex items-center gap-2 ${
+                  isActive 
+                    ? 'text-[#D4A24C] border-b-2 border-[#D4A24C]' 
+                    : 'text-[#C7BFB2]/50 hover:text-[#D4A24C]'
+                }`}
+              >
+                <Icon size={14} />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* Content Area */}
+        <main className="animate-fade-in">
+          {children}
+        </main>
+      </div>
+      
+      {/* Mobile nav fallback if needed */}
+      <div className="md:hidden">
         <AdminMobileBottomNav />
       </div>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-[#0D0B09] pt-16 md:pt-0 pb-24 md:pb-0">
-        {children}
-      </main>
     </div>
   );
 }

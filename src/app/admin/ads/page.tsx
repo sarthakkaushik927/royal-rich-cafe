@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAllAds } from '@/hooks/useOrderData';
 import { useAllFoodItems } from '@/hooks/useFoodData';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ToggleLeft, ToggleRight, Edit2, Trash2, Loader2, X, Check } from 'lucide-react';
+import { Plus, Edit3, Edit2, Trash2, Loader2, X, Check, ToggleRight, ToggleLeft } from 'lucide-react';
 
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { adService } from '@/services/adService';
@@ -21,7 +21,6 @@ export default function Page() {
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<Advertisement | undefined>();
 
-  // Recommendations state
   const [isRecModalOpen, setIsRecModalOpen] = useState(false);
   const [recSearch, setRecSearch] = useState('');
 
@@ -83,202 +82,128 @@ export default function Page() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-12">
-      {/* ---------------- ADS SECTION ---------------- */}
-      <section>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="font-serif text-2xl text-[#F7F3EC] mb-1">Promotional Banners</h2>
-            <p className="text-sm text-[#C7BFB2]">Manage carousel advertisements shown on the menu page</p>
-          </div>
-          <button 
-            onClick={() => handleOpenAdModal()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#D4A24C] px-4 py-2 text-sm font-medium text-[#1A1410] hover:bg-[#c8963f] transition-all shrink-0"
-          >
-            <Plus size={16} />
-            Create Banner
-          </button>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in pt-4">
+      {/* Left Column: Actions */}
+      <div className="lg:col-span-4 space-y-6">
+         <div className="rounded-xl glass-card p-5 space-y-5">
+            <h3 className="font-serif text-lg text-[#D4A24C] border-b border-[#D4A24C]/10 pb-2 uppercase tracking-wider flex items-center space-x-1.5">
+              <Edit3 size={16} />
+              <span>Draft Content</span>
+            </h3>
+            
+            <div className="space-y-4 text-xs">
+              <div className="space-y-2">
+                <p className="text-[#C7BFB2]/70 leading-relaxed font-semibold uppercase tracking-wider text-[10px]">Promotional Banners</p>
+                <button 
+                  onClick={() => handleOpenAdModal()}
+                  className="w-full py-3 bg-black/60 border border-[#D4A24C]/20 text-white font-serif tracking-widest uppercase text-xs rounded transition duration-300 shadow-md hover:border-[#D4A24C] text-center"
+                >
+                  Create Banner Ad
+                </button>
+              </div>
 
-        {adsLoading ? (
-          <div className="flex justify-center p-12">
-            <Loader2 className="animate-spin text-[#D4A24C] w-8 h-8" />
-          </div>
-        ) : ads.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#D4A24C]/30 bg-[#141210] p-12 text-center">
-            <p className="text-[#C7BFB2]">No promotional banners found.</p>
-          </div>
-        ) : (
-          <div className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x">
-            {ads.map((ad, i) => (
-              <motion.div
-                key={ad.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="flex flex-col w-[300px] shrink-0 snap-center rounded-xl border border-[#D4A24C]/15 bg-[#141210] p-4 transition-all hover:border-[#D4A24C]/30 shadow-lg relative group"
-              >
-                {ad.banner_image_url || ad.food_item?.image_url ? (
-                  <div className="h-40 w-full overflow-hidden rounded-lg mb-4">
-                    <img
-                      src={(ad.banner_image_url || ad.food_item?.image_url) as string}
-                      alt={ad.title}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-40 w-full rounded-lg bg-white/5 flex items-center justify-center text-sm text-[#C7BFB2]/50 mb-4">
-                    No Image
-                  </div>
-                )}
+              <div className="space-y-2 pt-4 border-t border-[#D4A24C]/10">
+                <p className="text-[#C7BFB2]/70 leading-relaxed font-semibold uppercase tracking-wider text-[10px]">Homepage Highlights</p>
+                <button 
+                  onClick={() => setIsRecModalOpen(true)}
+                  className="w-full py-3 bg-[#D4A24C] text-[#0D0B09] font-serif font-bold tracking-widest uppercase text-xs rounded transition duration-300 shadow-md hover:bg-[#c8963f]"
+                >
+                  Add Recommendation
+                </button>
+              </div>
+            </div>
+         </div>
+      </div>
 
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif text-lg text-[#F7F3EC] line-clamp-1">{ad.title}</h3>
-                  {ad.subtitle && <p className="text-xs text-[#C7BFB2] mt-1 line-clamp-2">{ad.subtitle}</p>}
+      {/* Right Column: Live Data */}
+      <div className="lg:col-span-8 space-y-8">
+        
+        {/* Ads List */}
+        <div className="rounded-xl glass-card p-5 space-y-4">
+          <h3 className="font-serif text-lg text-[#D4A24C] border-b border-[#D4A24C]/10 pb-2 uppercase tracking-wider">
+            Published Banners Catalog ({ads.length} Live)
+          </h3>
+
+          <div className="space-y-3">
+            {adsLoading ? (
+               <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#D4A24C]" /></div>
+            ) : ads.length === 0 ? (
+               <p className="text-[#C7BFB2]/50 text-xs py-4">No promotional banners active.</p>
+            ) : ads.map((ad) => (
+              <div key={ad.id} className="border border-[#D4A24C]/10 bg-black/40 p-4 rounded-lg flex justify-between items-center text-xs group hover:border-[#D4A24C]/30 transition-all">
+                <div className="flex gap-4 items-center max-w-[70%]">
+                  {ad.banner_image_url || ad.food_item?.image_url ? (
+                    <img src={(ad.banner_image_url || ad.food_item?.image_url) as string} alt="" className="w-16 h-12 object-cover rounded opacity-80 group-hover:opacity-100 transition" />
+                  ) : (
+                    <div className="w-16 h-12 bg-white/5 rounded" />
+                  )}
+                  <div className="space-y-1">
+                    <h4 className="font-serif font-bold text-[#F7F3EC] text-sm">{ad.title}</h4>
+                    <p className="text-[#C7BFB2]/70 text-[10px] leading-relaxed line-clamp-1 uppercase tracking-wider">
+                      {ad.active ? <span className="text-green-500">ACTIVE CAMPAIGN</span> : <span className="text-[#C7BFB2]">INACTIVE</span>} | {ad.subtitle || 'NO SUBTITLE'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
-                  <button 
-                    onClick={() => handleToggleAdActive(ad)}
-                    disabled={toggleAdMutation.isPending}
-                    className="flex items-center gap-1.5 text-xs text-[#D4A24C] hover:text-[#F7F3EC] transition-colors disabled:opacity-50"
-                  >
-                    {ad.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} className="text-[#C7BFB2]" />}
-                    {ad.active ? 'Active' : 'Inactive'}
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => handleToggleAdActive(ad)} className="p-2 bg-black/60 hover:bg-white/10 border border-[#D4A24C]/25 rounded text-[#C7BFB2] transition">
+                    {ad.active ? <ToggleRight size={14} className="text-[#D4A24C]" /> : <ToggleLeft size={14} />}
                   </button>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => handleOpenAdModal(ad)}
-                      className="p-1.5 text-[#C7BFB2] hover:text-[#D4A24C] hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteAd(ad.id)}
-                      className="p-1.5 text-[#C7BFB2] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <button onClick={() => handleOpenAdModal(ad)} className="p-2 bg-black/60 hover:bg-white/10 border border-[#D4A24C]/25 rounded text-[#C7BFB2] transition">
+                    <Edit2 size={14} />
+                  </button>
+                  <button onClick={() => handleDeleteAd(ad.id)} className="p-2 bg-red-950/20 hover:bg-red-900 border border-red-500/25 rounded text-red-400 transition">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        )}
-      </section>
-
-      {/* ---------------- RECOMMENDATIONS SECTION ---------------- */}
-      <section>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="font-serif text-2xl text-[#F7F3EC] mb-1">Homepage Recommendations</h2>
-            <p className="text-sm text-[#C7BFB2]">Manage dishes shown in the Recommended section</p>
-          </div>
-          <button 
-            onClick={() => setIsRecModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#D4A24C] px-4 py-2 text-sm font-medium text-[#1A1410] hover:bg-[#c8963f] transition-all shrink-0"
-          >
-            <Plus size={16} />
-            Add Recommendation
-          </button>
         </div>
 
-        {itemsLoading ? (
-          <div className="flex justify-center p-12">
-            <Loader2 className="animate-spin text-[#D4A24C] w-8 h-8" />
-          </div>
-        ) : (
-          <>
-            {recommendedItems.length === 0 && (
-              <div className="mb-4 rounded-xl border border-dashed border-[#D4A24C]/30 bg-[#141210] p-4 text-center">
-                <p className="text-[#C7BFB2] text-sm mb-2">No recommended dishes explicitly selected in the database.</p>
-                <p className="text-[#F7F3EC] text-sm">Currently showing the first 4 available dishes on the homepage as a fallback.</p>
-              </div>
-            )}
-            <div className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x">
-              {(recommendedItems.length > 0 ? recommendedItems : foodItems.slice(0, 4)).map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex flex-col w-[200px] shrink-0 snap-center rounded-xl border border-[#D4A24C]/15 bg-[#141210] p-3 transition-all hover:border-[#D4A24C]/30 shadow-lg relative group"
-                >
-                  <div className="h-32 w-full overflow-hidden rounded-lg mb-3">
-                    <img
-                      src={item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}
-                      alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0 mb-3">
-                    <h3 className="font-serif text-sm text-[#F7F3EC] line-clamp-1">{item.name}</h3>
-                    <span className="text-[10px] text-[#C7BFB2]/70 uppercase">{item.category?.name || 'Dish'}</span>
-                  </div>
+        {/* Recommendations List */}
+        <div className="rounded-xl glass-card p-5 space-y-4">
+          <h3 className="font-serif text-lg text-[#D4A24C] border-b border-[#D4A24C]/10 pb-2 uppercase tracking-wider">
+            Curated Recommendations ({recommendedItems.length} Featured)
+          </h3>
 
-                  <button 
-                    onClick={() => handleToggleRecommendation(item.id, !item.is_recommended)}
-                    className={`w-full py-1.5 flex justify-center items-center gap-1.5 text-xs rounded-lg transition-colors ${
-                      item.is_recommended 
-                        ? 'text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20'
-                        : 'text-green-400 hover:text-green-300 bg-green-500/10 hover:bg-green-500/20'
-                    }`}
-                  >
-                    {item.is_recommended ? (
-                      <><Trash2 size={12} /> Remove</>
-                    ) : (
-                      <><Check size={12} /> Set as Recommended</>
-                    )}
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-          </>
-        )}
-      </section>
+          <div className="space-y-3">
+            {itemsLoading ? (
+               <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#D4A24C]" /></div>
+            ) : recommendedItems.length === 0 ? (
+               <p className="text-[#C7BFB2]/50 text-xs py-4">No featured dishes selected. System defaulting to top menu items.</p>
+            ) : recommendedItems.map((item) => (
+              <div key={item.id} className="border border-[#D4A24C]/10 bg-black/40 p-4 rounded-lg flex justify-between items-center text-xs group hover:border-[#D4A24C]/30 transition-all">
+                <div className="flex gap-4 items-center max-w-[70%]">
+                  <img src={item.image_url || ''} alt="" className="w-12 h-12 object-cover rounded opacity-80 group-hover:opacity-100 transition" />
+                  <div className="space-y-1">
+                    <h4 className="font-serif font-bold text-[#F7F3EC] text-sm">{item.name}</h4>
+                    <p className="text-[#C7BFB2]/70 text-[10px] leading-relaxed line-clamp-1 uppercase tracking-wider">
+                      {item.category?.name || 'Dish'} | FEATURED ON HOMEPAGE
+                    </p>
+                  </div>
+                </div>
+
+                <button onClick={() => handleToggleRecommendation(item.id, false)} className="p-2 bg-red-950/20 hover:bg-red-900 border border-red-500/25 rounded text-red-400 transition">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       
-      <AdvertisementModal
-        isOpen={isAdModalOpen}
-        onClose={() => setIsAdModalOpen(false)}
-        foodItems={foodItems}
-        adToEdit={editingAd}
-      />
+      <AdvertisementModal isOpen={isAdModalOpen} onClose={() => setIsAdModalOpen(false)} foodItems={foodItems} adToEdit={editingAd} />
 
       {/* Recommended Item Picker Modal */}
       <AnimatePresence>
         {isRecModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setIsRecModalOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md max-h-[80vh] flex flex-col rounded-2xl border border-[#D4A24C]/20 bg-[#0D0B09] p-6 shadow-2xl"
-            >
-              <button
-                onClick={() => setIsRecModalOpen(false)}
-                className="absolute right-6 top-6 text-[#C7BFB2] hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsRecModalOpen(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-md max-h-[80vh] flex flex-col rounded-2xl border border-[#D4A24C]/20 bg-[#0D0B09] p-6 shadow-2xl">
+              <button onClick={() => setIsRecModalOpen(false)} className="absolute right-6 top-6 text-[#C7BFB2] hover:text-white transition-colors"><X size={20} /></button>
               <h2 className="font-serif text-xl text-[#F7F3EC] mb-4">Add Recommendation</h2>
-              
-              <input 
-                type="text" 
-                placeholder="Search dishes..."
-                value={recSearch}
-                onChange={(e) => setRecSearch(e.target.value)}
-                className="w-full rounded-lg border border-[#D4A24C]/15 bg-[#141210] p-3 text-[#F7F3EC] outline-none focus:border-[#D4A24C]/40 mb-4"
-              />
-
+              <input type="text" placeholder="Search dishes..." value={recSearch} onChange={(e) => setRecSearch(e.target.value)} className="w-full rounded-lg border border-[#D4A24C]/15 bg-[#141210] p-3 text-[#F7F3EC] outline-none focus:border-[#D4A24C]/40 mb-4" />
               <div className="flex-1 overflow-y-auto pr-2 space-y-2">
                 {unrecommendedItems.length === 0 ? (
                   <p className="text-center text-[#C7BFB2]/50 text-sm py-8">No matching dishes found.</p>
@@ -292,12 +217,7 @@ export default function Page() {
                           <span className="text-[10px] text-[#C7BFB2]">{item.category?.name}</span>
                         </div>
                       </div>
-                      <button 
-                        onClick={() => handleToggleRecommendation(item.id, true)}
-                        className="p-2 text-[#D4A24C] hover:bg-[#D4A24C]/10 rounded-lg transition-colors"
-                      >
-                        <Plus size={16} />
-                      </button>
+                      <button onClick={() => handleToggleRecommendation(item.id, true)} className="p-2 text-[#D4A24C] hover:bg-[#D4A24C]/10 rounded-lg transition-colors"><Plus size={16} /></button>
                     </div>
                   ))
                 )}

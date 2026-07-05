@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Replace with the actual deployed production URL
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://royalcafe.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://royalrichcafe.com';
   
   return [
     {

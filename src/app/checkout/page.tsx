@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -31,23 +31,6 @@ export default function CheckoutPage() {
   const { isAuthenticated, loading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
-  import('react').then((React) => {
-    React.useEffect(() => {
-      setIsMounted(true);
-      if (!loading && !isAuthenticated) {
-        router.push('/auth?redirect=/checkout');
-      }
-    }, [loading, isAuthenticated, router]);
-  });
-
-  if (!isMounted || loading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#0D0B09] flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#D4A24C] w-8 h-8" />
-      </div>
-    );
-  }
-
   const {
     register,
     handleSubmit,
@@ -65,6 +48,21 @@ export default function CheckoutPage() {
   });
 
   const orderType = watch('order_type');
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (!loading && !isAuthenticated) {
+      router.push('/auth?redirect=/checkout');
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (!isMounted || loading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0D0B09] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#D4A24C] w-8 h-8" />
+      </div>
+    );
+  }
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (items.length === 0) {
@@ -84,7 +82,7 @@ export default function CheckoutPage() {
       });
 
       clearCart();
-      
+
       // Save order tracking token locally
       const storedTokens = localStorage.getItem('royal_cafe_orders');
       const tokens = storedTokens ? JSON.parse(storedTokens) : [];
@@ -125,13 +123,6 @@ export default function CheckoutPage() {
 
       <section className="pt-24 pb-6 px-6 md:px-12">
         <div className="max-w-4xl mx-auto">
-          <Link
-            href="/cart"
-            className="inline-flex items-center gap-2 text-sm text-[#C7BFB2] hover:text-[#D4A24C] transition-colors mb-6"
-          >
-            <ArrowLeft size={16} />
-            Back to Cart
-          </Link>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="font-serif text-4xl text-[#F7F3EC] mb-2">Checkout</h1>
             <p className="text-[#C7BFB2]">Complete your order details</p>
@@ -192,11 +183,10 @@ export default function CheckoutPage() {
                   return (
                     <label
                       key={opt.value}
-                      className={`flex flex-col items-center gap-2 cursor-pointer rounded-lg border p-4 text-center transition-all ${
-                        isActive
+                      className={`flex flex-col items-center gap-2 cursor-pointer rounded-lg border p-4 text-center transition-all ${isActive
                           ? 'border-[#D4A24C] bg-[#D4A24C]/10 text-[#D4A24C]'
                           : 'border-[#D4A24C]/15 text-[#C7BFB2] hover:border-[#D4A24C]/30'
-                      }`}
+                        }`}
                     >
                       <input
                         type="radio"

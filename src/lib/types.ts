@@ -1,7 +1,7 @@
 import { z } from 'zod/v4';
 
 // ─── Enums ───────────────────────────────────────────────────
-export const UserRole = z.enum(['customer', 'chef', 'admin']);
+export const UserRole = z.enum(['customer', 'chef', 'admin', 'waiter']);
 export type UserRole = z.infer<typeof UserRole>;
 
 export const FoodSize = z.enum(['small', 'medium', 'large']);
@@ -28,6 +28,7 @@ export interface Profile {
   phone: string | null;
   address?: string | null;
   role: UserRole;
+  loyalty_coins: number;
   created_at: string;
 }
 
@@ -48,6 +49,8 @@ export interface FoodItem {
   image_url: string | null;
   is_available: boolean;
   is_recommended?: boolean;
+  ingredients?: string[];
+  preparation_options?: string[];
   created_at: string;
 }
 
@@ -137,6 +140,8 @@ export const FoodItemFormSchema = z.object({
   price_small: z.number().min(0),
   price_medium: z.number().min(0),
   price_large: z.number().min(0),
+  ingredients: z.array(z.string()).optional(),
+  preparation_options: z.array(z.string()).optional(),
 });
 export type FoodItemFormData = z.infer<typeof FoodItemFormSchema>;
 
@@ -160,12 +165,15 @@ export type AdFormData = z.infer<typeof AdFormSchema>;
 
 export interface Reservation {
   id: string;
+  customer_id?: string | null;
   guest_name: string;
   guest_email: string;
   guest_phone: string;
   reservation_date: string;
   reservation_time: string;
   guests_count: number;
+  floor_number?: number;
+  selected_seats?: string[];
   special_requests: string | null;
   payment_status: 'pending' | 'paid';
   payment_amount: number;

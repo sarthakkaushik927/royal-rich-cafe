@@ -11,6 +11,9 @@ export interface CreateReservationInput {
   special_requests?: string;
   payment_status?: 'pending' | 'paid';
   payment_amount?: number;
+  customer_id?: string | null;
+  floor_number?: number;
+  selected_seats?: string[];
 }
 
 export interface ReservationService {
@@ -116,6 +119,9 @@ export const reservationService: ReservationService = {
       payment_amount: input.payment_amount ?? 0.00,
       verification_code: verificationCode,
       status: 'confirmed' as const,
+      customer_id: input.customer_id ?? null,
+      floor_number: input.floor_number ?? 1,
+      selected_seats: input.selected_seats ?? [],
     };
 
     try {

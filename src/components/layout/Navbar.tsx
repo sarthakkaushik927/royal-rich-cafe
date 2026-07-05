@@ -1,110 +1,208 @@
 "use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, Diamond, User } from "lucide-react";
-import { useAuth } from '@/hooks/useAuth';
 
-const links = [
-  { label: "Home", href: "/" },
-  { label: "Menu", href: "/menu" },
-  { label: "My Orders", href: "/my-orders" },
-  { label: "About", href: "/#about" },
-  { label: "Reservations", href: "/#reserve" },
-];
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Menu as MenuIcon, X, ShoppingBag, ShieldCheck, ChefHat, User, Coffee, Receipt } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useCartStore } from '@/hooks/useCartStore';
 
 export function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
-
-  const handleLinkClick = (href: string) => {
-    if (href === '/' && pathname === '/') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    setOpen(false);
-  };
+  
+  const cartCount = useCartStore((s) => s.totalItems());
+  const openCart = useCartStore((s) => s.openCart);
+  const tableNum = searchParams.get('table');
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const links = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Menu', path: '/menu' },
+    { name: 'Reservations', path: '/reservations' },
+    { name: 'Gallery', path: '/gallery' },
+    { name: 'Blogs', path: '/blogs' },
+  ];
+
+  const dashboardLinks = [
+    { name: 'Admin', path: '/admin', icon: ShieldCheck },
+    { name: 'Kitchen KDS', path: '/chef', icon: ChefHat },
+    { name: 'Waiter Board', path: '/waiter', icon: Coffee },
+  ];
+
   return (
-    <nav
-      className={
-        "hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-500 " +
-        (scrolled ? "bg-[#0D0B09]/70 backdrop-blur-xl border-b border-[#FFB846]/20 shadow-[0_4px_30px_rgba(0,0,0,0.3)] py-2" : "bg-transparent py-4")
-      }
-    >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between transition-all duration-500">
-        <Link href="/" className="flex items-center gap-2 group" onClick={() => handleLinkClick('/')}>
-          <Diamond size={20} className="text-[#FFB846] group-hover:rotate-180 transition-transform duration-700" />
-          <span className="font-[Marcellus] text-[#FFB846] text-2xl tracking-[0.15em] uppercase">
-            Royal Cafe
-          </span>
-        </Link>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-sans text-[#f5f1e7] ${
+      scrolled 
+        ? 'bg-[#1f1610] border-b border-[#31231a] shadow-lg' 
+        : 'bg-gradient-to-b from-black/70 via-black/30 to-transparent border-transparent'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`flex items-center justify-between transition-all duration-500 ${scrolled ? 'h-20' : 'h-28'}`}>
+          {/* Logo */}
+          <div className="flex-shrink-0 flex items-center">
+            <Link href="/" className="flex flex-col items-center">
+              <span className="font-serif text-3xl text-white tracking-widest uppercase">
+                Royal Rich
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.3em] text-luxury-gold -mt-1">
+                Restaurant & Cafe
+              </span>
+            </Link>
+          </div>
 
-        <ul className="hidden md:flex items-center gap-10">
-          {links.map((l) => (
-            <li key={l.href}>
+          {/* Desktop Nav Links */}
+          <div className="hidden lg:flex items-center space-x-8">
+            {links.map((link) => {
+              const isActive = pathname === link.path;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.path + (tableNum ? `?table=${tableNum}` : '')}
+                  className={`text-xs uppercase tracking-widest transition-colors duration-300 font-medium ${
+                    isActive ? 'text-luxury-gold' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Dashboards and Cart Actions */}
+          <div className="hidden lg:flex items-center space-x-6">
+            <Link
+              href={`/reservations${tableNum ? `?table=${tableNum}` : ''}`}
+              className="border border-luxury-gold text-luxury-gold px-6 py-2 text-xs uppercase tracking-widest font-bold hover:bg-luxury-gold hover:text-luxury-bg transition duration-300"
+            >
+              Reserve a Table
+            </Link>
+
+            {/* Quick dashboard selectors */}
+            <div className="flex space-x-2">
+              {dashboardLinks.map((dash) => (
+                <Link
+                  key={dash.name}
+                  href={dash.path}
+                  title={dash.name}
+                  className="p-1 text-gray-500 hover:text-luxury-gold transition"
+                >
+                  <dash.icon size={16} />
+                </Link>
+              ))}
               <Link
-                href={l.href}
-                onClick={() => handleLinkClick(l.href)}
-                className="text-[#F7F3EC] text-[13px] font-medium tracking-[0.2em] uppercase hover:text-[#D4A24C] transition-colors relative py-2 after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#D4A24C] hover:after:w-full after:transition-all after:duration-300"
+                href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+                title="My Profile"
+                className="p-1 text-gray-500 hover:text-luxury-gold transition"
               >
-                {l.label}
+                <User size={16} />
               </Link>
-            </li>
-          ))}
-        </ul>
+            </div>
 
-        <div className="flex items-center gap-4">
-          <Link
-            href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
-            className="text-[#F7F3EC] hover:text-[#D4A24C] transition-colors p-2 hidden md:block"
-            aria-label="Account"
-          >
-            <User size={22} />
-          </Link>
-          <button
-            className="md:hidden text-[#F7F3EC]"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={26} /> : <Menu size={26} />}
-          </button>
+            {/* Active Orders Button */}
+            <Link
+              href="/my-orders"
+              title="Track Active Orders"
+              className="p-2 text-gray-300 hover:text-luxury-gold transition duration-300"
+            >
+              <Receipt size={20} />
+            </Link>
+
+            {/* Cart Button */}
+            <button
+              onClick={openCart}
+              className="relative p-2 text-gray-300 hover:text-luxury-gold transition duration-300"
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-luxury-gold text-luxury-bg text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center lg:hidden gap-1 sm:gap-4">
+            <Link
+              href="/my-orders"
+              title="Track Active Orders"
+              className="p-1.5 text-gray-300 hover:text-luxury-gold"
+            >
+              <Receipt size={20} />
+            </Link>
+
+            <button
+              onClick={openCart}
+              className="relative p-1.5 text-gray-300 hover:text-luxury-gold"
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-luxury-gold text-luxury-bg text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-1.5 text-gray-300 hover:text-luxury-gold focus:outline-none"
+            >
+              {isOpen ? <X size={24} /> : <MenuIcon size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
-      {open && (
-        <div className="md:hidden bg-[#0D0B09] border-t border-[#D4A24C]/20">
-          <ul className="flex flex-col px-6 py-4 gap-4">
-            {links.map((l) => (
-              <li key={l.href}>
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="lg:hidden bg-luxury-bg border-t border-[#31231a] animate-fade-in">
+          <div className="px-4 pt-2 pb-6 space-y-4">
+            {links.map((link) => {
+              const isActive = pathname === link.path;
+              return (
                 <Link
-                  href={l.href}
-                  className="block text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
-                  onClick={() => handleLinkClick(l.href)}
+                  key={link.name}
+                  href={link.path + (tableNum ? `?table=${tableNum}` : '')}
+                  onClick={() => setIsOpen(false)}
+                  className={`block text-center uppercase tracking-widest text-sm py-3 transition ${
+                    isActive ? 'text-luxury-gold font-semibold' : 'text-gray-300 hover:text-white'
+                  }`}
                 >
-                  {l.label}
+                  {link.name}
                 </Link>
-              </li>
-            ))}
-            <li>
+              );
+            })}
+            
+            <Link
+              href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
+              onClick={() => setIsOpen(false)}
+              className="block text-center uppercase tracking-widest text-sm py-3 transition text-gray-300 hover:text-white"
+            >
+              {isAuthenticated ? "My Account" : "Sign In / Sign Up"}
+            </Link>
+
+            <div className="pt-4 flex justify-center">
               <Link
-                href={isAuthenticated ? "/profile" : `/auth?redirect=${pathname}`}
-                className="flex items-center gap-2 text-[#F7F3EC] text-sm uppercase tracking-wider hover:text-[#D4A24C]"
-                onClick={() => handleLinkClick(isAuthenticated ? '/profile' : `/auth?redirect=${pathname}`)}
+                href={`/reservations${tableNum ? `?table=${tableNum}` : ''}`}
+                onClick={() => setIsOpen(false)}
+                className="inline-block border border-luxury-gold text-luxury-gold px-6 py-3 text-xs uppercase tracking-widest font-bold w-full text-center hover:bg-luxury-gold hover:text-luxury-bg transition duration-300"
               >
-                <User size={18} />
-                {isAuthenticated ? "My Account" : "Sign In / Sign Up"}
+                Reserve a Table
               </Link>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       )}
     </nav>

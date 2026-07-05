@@ -21,6 +21,8 @@ export function FoodItemModal({ isOpen, onClose, categories, itemToEdit }: FoodI
   const [categoryId, setCategoryId] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isAvailable, setIsAvailable] = useState(true);
+  const [ingredientsStr, setIngredientsStr] = useState('');
+  const [prepOptionsStr, setPrepOptionsStr] = useState('');
   
   // Local state for prices
   const [prices, setPrices] = useState<{ size: 'small' | 'medium' | 'large'; price: number }[]>([
@@ -34,6 +36,8 @@ export function FoodItemModal({ isOpen, onClose, categories, itemToEdit }: FoodI
       setCategoryId(itemToEdit.category_id);
       setImageUrl(itemToEdit.image_url || '');
       setIsAvailable(itemToEdit.is_available);
+      setIngredientsStr(itemToEdit.ingredients?.join(', ') || '');
+      setPrepOptionsStr(itemToEdit.preparation_options?.join(', ') || '');
       setPrices(itemToEdit.prices.map(p => ({ size: p.size as any, price: p.price })));
     } else {
       setName('');
@@ -41,6 +45,8 @@ export function FoodItemModal({ isOpen, onClose, categories, itemToEdit }: FoodI
       setCategoryId(categories[0]?.id || '');
       setImageUrl('');
       setIsAvailable(true);
+      setIngredientsStr('');
+      setPrepOptionsStr('');
       setPrices([{ size: 'medium', price: 0 }]);
     }
   }, [itemToEdit, categories, isOpen]);
@@ -53,6 +59,8 @@ export function FoodItemModal({ isOpen, onClose, categories, itemToEdit }: FoodI
         category_id: categoryId,
         image_url: imageUrl,
         is_available: isAvailable,
+        ingredients: ingredientsStr ? ingredientsStr.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+        preparation_options: prepOptionsStr ? prepOptionsStr.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
       };
       if (itemToEdit) {
         return foodService.updateFoodItem(itemToEdit.id, payload, prices);
