@@ -2,7 +2,9 @@
 import { useState, useCallback, useRef } from "react";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import { Upload, Link as LinkIcon, Crop, X, ZoomIn, ZoomOut, RotateCw, Check } from "lucide-react";
+import { Upload, Link as LinkIcon, Crop, X, ZoomIn, ZoomOut, RotateCw, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 interface ImageUploadProps {
   value: string;
@@ -57,6 +59,7 @@ export function ImageUpload({
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
@@ -102,15 +105,42 @@ export function ImageUpload({
   const handleCropSave = async () => {
     if (!croppedAreaPixels) return;
     try {
+      setIsUploading(true);
       const croppedDataUrl = await getCroppedImg(rawImage, croppedAreaPixels);
-      onChange(croppedDataUrl);
+      
+      // Convert Data URL to Blob
+      const res = await fetch(croppedDataUrl);
+      const blob = await res.blob();
+      
+      // Generate unique filename
+      const filename = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      
+      // Upload to Supabase Storage bucket 'images'
+      const { data, error } = await supabase.storage
+        .from('images')
+        .upload(filename, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(data.path);
+
+      onChange(publicUrl);
       setMode("idle");
       setRawImage("");
-    } catch (err) {
-      console.error("Crop failed:", err);
-      // Fallback: use raw image
-      onChange(rawImage);
-      setMode("idle");
+      toast.success("Image uploaded successfully");
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      toast.error(err.message || "Failed to upload image to storage");
+      // Fallback: don't save anything if upload fails
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -187,9 +217,11 @@ export function ImageUpload({
               <button
                 type="button"
                 onClick={handleCropSave}
-                className="flex-1 py-2 rounded-lg text-xs font-medium text-[#1A1410] bg-[#D4A24C] hover:bg-[#c8963f] transition-colors flex items-center justify-center gap-1"
+                disabled={isUploading}
+                className="flex-1 py-2 rounded-lg text-xs font-medium text-[#1A1410] bg-[#D4A24C] hover:bg-[#c8963f] transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
               >
-                <Check size={14} /> Apply Crop
+                {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} 
+                {isUploading ? "Uploading..." : "Apply & Upload"}
               </button>
             </div>
           </div>

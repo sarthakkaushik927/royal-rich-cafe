@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Diamond, Calendar, Settings, QrCode, Tags, Users, UserCog } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Diamond, Calendar, Settings, QrCode, Users, UserCog } from 'lucide-react';
 import { authService } from '@/services/authService';
 
 const navItems = [
@@ -14,7 +14,6 @@ const navItems = [
   { label: 'Orders', path: '/admin/orders', icon: ReceiptText },
   { label: 'Reservations', path: '/admin/reservations', icon: Users },
   { label: 'Employees', path: '/admin/employees', icon: UserCog },
-  { label: 'Categories', path: '/admin/categories', icon: Tags },
   { label: 'QR Codes', path: '/admin/qr', icon: QrCode },
   { label: 'Settings', path: '/admin/settings', icon: Settings },
 ];
