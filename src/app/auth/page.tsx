@@ -21,6 +21,10 @@ function AuthContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [address, setAddress] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [roleMode, setRoleMode] = useState<'customer' | 'admin' | 'chef' | 'waiter'>('customer');
+  const [isUploading, setIsUploading] = useState(false);
 
 
   const router = useRouter();
@@ -50,7 +54,30 @@ function AuthContent() {
         setLoading(false);
         return toast.error('Please enter a valid phone number');
       }
-      
+      let avatarUrl = '';
+      if (avatarFile) {
+        setIsUploading(true);
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile);
+        
+        if (uploadError) {
+          toast.error('Failed to upload image');
+          setLoading(false);
+          setIsUploading(false);
+          return;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+        
+        avatarUrl = publicUrl;
+        setIsUploading(false);
+      }
+
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
@@ -58,7 +85,10 @@ function AuthContent() {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
-            phone: phone
+            phone: phone,
+            requested_role: roleMode,
+            address: address,
+            avatar_url: avatarUrl
           }
         },
       });
@@ -75,7 +105,7 @@ function AuthContent() {
         return toast.error('Please enter your password');
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -87,9 +117,22 @@ function AuthContent() {
         } else {
           toast.error('Invalid email or password');
         }
-      } else {
+      } else if (signInData.user) {
+        // Check profile status
+        const { data: profile } = await supabase.from('profiles').select('status, role').eq('id', signInData.user.id).single();
+        if (profile?.status === 'pending') {
+          await supabase.auth.signOut();
+          toast.error('Your account is pending admin approval.');
+          return;
+        }
+        if (profile?.status === 'rejected') {
+          await supabase.auth.signOut();
+          toast.error('Your account request was rejected.');
+          return;
+        }
+
         toast.success('Successfully logged in!');
-        router.push(redirectTo);
+        router.replace(redirectTo);
       }
     } else if (mode === 'forgot_password') {
       const resetUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent('/auth/update-password')}`;
@@ -192,6 +235,35 @@ function AuthContent() {
             <p className="text-gray-400">{renderSubtitle()}</p>
           </div>
 
+          {(mode === 'login' || mode === 'signup') && (
+            <div className="flex gap-2 mb-6 bg-[#2C2C2E] p-1 rounded-xl">
+              <button
+                onClick={() => setRoleMode('customer')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${roleMode === 'customer' ? 'bg-[#fba93b] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                Customer
+              </button>
+              <button
+                onClick={() => setRoleMode('chef')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${roleMode === 'chef' ? 'bg-[#fba93b] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                Kitchen
+              </button>
+              <button
+                onClick={() => setRoleMode('waiter')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${roleMode === 'waiter' ? 'bg-[#fba93b] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                Waiter
+              </button>
+              <button
+                onClick={() => setRoleMode('admin')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${roleMode === 'admin' ? 'bg-[#fba93b] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                Admin
+              </button>
+            </div>
+          )}
+
           <div className="bg-[#2C2C2E] border border-gray-700 p-6 md:p-8 rounded-3xl shadow-xl">
             {mode === 'verify_email' ? (
               <div className="text-center space-y-6">
@@ -263,10 +335,11 @@ function AuthContent() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number (Optional)</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
                       <div className="relative">
                         <input
                           type="tel"
+                          required
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+1 (555) 000-0000"
@@ -274,6 +347,35 @@ function AuthContent() {
                         />
                       </div>
                     </div>
+                    {roleMode !== 'customer' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              required
+                              value={address}
+                              onChange={(e) => setAddress(e.target.value)}
+                              placeholder="123 Main St"
+                              className="w-full h-12 bg-[#1C1C1E] border border-gray-600 rounded-xl px-4 text-white placeholder-gray-500 focus:border-[#fba93b] focus:outline-none transition-colors"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Employee Photo</label>
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              required
+                              onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                              className="w-full bg-[#1C1C1E] border border-gray-600 rounded-xl px-4 py-2.5 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#fba93b] file:text-black hover:file:bg-[#c8963f] focus:border-[#fba93b] focus:outline-none transition-colors"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 

@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Menu, X, Diamond, Calendar } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, Megaphone, ReceiptText, LogOut, Diamond, Calendar, Settings, QrCode, Tags, Users, UserCog } from 'lucide-react';
 import { authService } from '@/services/authService';
-import { AdminMobileBottomNav } from './AdminMobileBottomNav';
 
 const navItems = [
   { label: 'Analytics', path: '/admin', icon: LayoutDashboard },
@@ -13,7 +12,11 @@ const navItems = [
   { label: 'Inventory', path: '/admin/inventory', icon: Diamond },
   { label: 'Ads CMS', path: '/admin/ads', icon: Megaphone },
   { label: 'Orders', path: '/admin/orders', icon: ReceiptText },
-  { label: 'Reservations', path: '/admin/reservations', icon: Calendar },
+  { label: 'Reservations', path: '/admin/reservations', icon: Users },
+  { label: 'Employees', path: '/admin/employees', icon: UserCog },
+  { label: 'Categories', path: '/admin/categories', icon: Tags },
+  { label: 'QR Codes', path: '/admin/qr', icon: QrCode },
+  { label: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 export function AdminLayout({ children }: { children?: React.ReactNode }) {
@@ -130,11 +133,6 @@ export function AdminLayout({ children }: { children?: React.ReactNode }) {
             {children}
           </motion.main>
         </AnimatePresence>
-      </div>
-      
-      {/* Mobile nav fallback if needed */}
-      <div className="md:hidden">
-        <AdminMobileBottomNav />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Users, ShieldCheck, Mail, Phone, Search, Loader2, X, BookmarkCheck } from 'lucide-react';
 import { reservationService } from '@/services/reservationService';
@@ -44,6 +45,24 @@ export default function Page() {
       toast.error(err instanceof Error ? err.message : 'Failed to update payment status');
     },
   });
+
+  // Real-time subscription for reservations
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-reservations-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations' },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Filter & Search Logic
   const filteredReservations = reservations.filter((res) => {

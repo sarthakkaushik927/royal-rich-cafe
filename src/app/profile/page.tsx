@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin, LogOut, Loader2, Edit3, ShieldCheck, Check, X, Calendar } from "lucide-react";
+import { User, Mail, Phone, MapPin, LogOut, Loader2, Edit3, ShieldCheck, Check, X, Calendar, Coins } from "lucide-react";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
 
@@ -124,6 +124,16 @@ export default function ProfilePage() {
                 </h3>
                 <div className="bg-[#0D0B09] border border-[#D4A24C]/10 rounded-lg p-4 text-[#F7F3EC]">
                   {email || "Loading..."}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs uppercase tracking-widest text-[#D4A24C] font-semibold mb-2 flex items-center gap-2">
+                  <Coins size={14} /> Royal Coins
+                </h3>
+                <div className="bg-[#0D0B09] border border-[#D4A24C]/10 rounded-lg p-4 text-[#F7F3EC] flex items-center gap-2">
+                  <span className="text-2xl font-serif text-[#D4A24C]">{profile?.loyalty_coins || 0}</span>
+                  <span className="text-xs text-[#C7BFB2]">coins</span>
                 </div>
               </div>
             </div>

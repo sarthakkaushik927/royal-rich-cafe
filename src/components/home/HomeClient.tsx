@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { LeafBranch } from '@/components/ui/Doodles';
 import { useAllFoodItems } from '@/hooks/useFoodData';
 import { reviews } from '@/data/content';
+import { QRScanner } from '@/components/ui/QRScanner';
+import { QrCode } from 'lucide-react';
 
 export function HomeClient() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export function HomeClient() {
 
   // Hero Slider
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const sliderImages = [
     '/slider/slide1.png',
     '/slider/slide2.png',
@@ -37,6 +40,7 @@ export function HomeClient() {
 
   return (
     <div className="font-serif">
+      {showQRScanner && <QRScanner onClose={() => setShowQRScanner(false)} />}
       
       {/* 1. HERO SECTION (Full Screen Landscape) */}
       <section className="relative min-h-screen flex items-center justify-center bg-luxury-bg text-white overflow-hidden border-b-8 border-luxury-dark">
@@ -75,16 +79,24 @@ export function HomeClient() {
               Where authentic vegetarian flavors meet modern elegance. Every dish is crafted with passion, served with grace, and made with absolute love.
             </p>
             
-            <div className="pt-10 animate-fade-up-delay-3">
+            <div className="pt-10 animate-fade-up-delay-3 flex flex-col sm:flex-row gap-4 w-full">
               <Link 
                 href={`/menu${tableSuffix}`} 
-                className="group relative inline-flex items-center justify-center px-12 py-4 border border-luxury-gold/60 bg-black/20 backdrop-blur-md text-[#e4c295] font-sans font-light text-sm tracking-[0.3em] uppercase transition-all duration-700 hover:bg-luxury-gold hover:border-luxury-gold hover:text-luxury-bg hover:shadow-gold overflow-hidden rounded-sm"
+                className="group relative inline-flex items-center justify-center px-12 py-4 border border-luxury-gold/60 bg-black/20 backdrop-blur-md text-[#e4c295] font-sans font-light text-sm tracking-[0.3em] uppercase transition-all duration-700 hover:bg-luxury-gold hover:border-luxury-gold hover:text-luxury-bg hover:shadow-gold overflow-hidden rounded-sm text-center"
               >
                 <span className="relative z-10 flex items-center">
                   EXPLORE MENU 
                   <span className="ml-4 font-serif italic text-lg transition-transform duration-500 group-hover:translate-x-2">&rarr;</span>
                 </span>
               </Link>
+              
+              <button 
+                onClick={() => setShowQRScanner(true)}
+                className="group relative inline-flex items-center justify-center px-10 py-4 border border-luxury-gold/40 bg-transparent text-[#e4c295] font-sans font-light text-sm tracking-[0.2em] uppercase transition-all duration-500 hover:bg-luxury-gold/10 hover:border-luxury-gold hover:text-white rounded-sm"
+              >
+                <QrCode className="mr-3" size={18} />
+                SCAN TABLE QR
+              </button>
             </div>
           </div>
         </div>

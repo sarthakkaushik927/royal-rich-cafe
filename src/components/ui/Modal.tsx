@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -12,6 +13,11 @@ interface ModalProps {
 
 export function Modal({ open, onClose, children, title }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -26,7 +32,7 @@ export function Modal({ open, onClose, children, title }: ModalProps) {
     };
   }, [open, onClose]);
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -66,4 +72,8 @@ export function Modal({ open, onClose, children, title }: ModalProps) {
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(modalContent, document.body);
 }

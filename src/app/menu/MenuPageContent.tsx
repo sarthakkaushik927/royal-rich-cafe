@@ -28,6 +28,14 @@ function MenuPage() {
   const addItemToCart = useCartStore(state => state.addItem);
   const router = useRouter();
 
+  // Persist table number to sessionStorage when accessed via QR
+  React.useEffect(() => {
+    const table = searchParams?.get('table');
+    if (table) {
+      sessionStorage.setItem('royal_rich_table', table);
+    }
+  }, [searchParams]);
+
   const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(urlCategorySlug);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedItem, setSelectedItem] = useState<FoodItemWithPrices | null>(null);

@@ -10,6 +10,7 @@ export interface CreateOrderInput {
   table_number?: string;
   delivery_address?: string;
   items: CartItem[];
+  applied_coins?: number;
 }
 
 export interface OrderService {
@@ -27,6 +28,14 @@ export interface OrderService {
 
 export const orderService: OrderService = {
   async createOrder(input) {
+    const subtotal = input.items.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
+    const appliedCoins = input.applied_coins ?? 0;
+    const discountAmount = appliedCoins * 0.01;
+    const finalTotal = Math.max(0, subtotal - discountAmount);
+    
+    // 1 coin earned per 1 rs spent
+    const earnedCoins = Math.floor(finalTotal);
+
     const orderPayload = {
       customer_id: input.customer_id ?? null,
       guest_name: input.guest_name ?? null,
@@ -36,7 +45,9 @@ export const orderService: OrderService = {
       table_number: input.table_number ?? null,
       delivery_address: input.delivery_address ?? null,
       status: 'confirmed' as const,
-      total_amount: 0,
+      total_amount: finalTotal,
+      applied_coins: appliedCoins,
+      discount_amount: discountAmount,
     };
 
     const { data: order, error: orderError } = await supabase
@@ -63,6 +74,23 @@ export const orderService: OrderService = {
       .insert(itemRows);
 
     if (itemsError) throw new Error(itemsError.message);
+
+    // Update user's loyalty coins
+    if (input.customer_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('loyalty_coins')
+        .eq('id', input.customer_id)
+        .single();
+        
+      if (profile) {
+        const newBalance = Math.max(0, profile.loyalty_coins - appliedCoins) + earnedCoins;
+        await supabase
+          .from('profiles')
+          .update({ loyalty_coins: newBalance })
+          .eq('id', input.customer_id);
+      }
+    }
 
     return this.getByTrackingToken(typedOrder.tracking_token);
   },

@@ -27,7 +27,9 @@ export interface Profile {
   full_name: string | null;
   phone: string | null;
   address?: string | null;
+  avatar_url?: string | null;
   role: UserRole;
+  status: 'active' | 'pending' | 'rejected';
   loyalty_coins: number;
   created_at: string;
 }
@@ -91,6 +93,14 @@ export interface Order {
   status: OrderStatus;
   cancellation_reason: string | null;
   total_amount: number;
+  applied_coins?: number;
+  discount_amount?: number;
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  razorpay_signature?: string | null;
+  payment_status: 'pending' | 'paid' | 'failed';
+  payment_mode: 'live' | 'mock';
+  currency: string;
   tracking_token: string;
   created_at: string;
   updated_at: string;
@@ -182,6 +192,21 @@ export interface Reservation {
   created_at: string;
 }
 
+export interface AppSettings {
+  id: number;
+  payment_mode: 'live' | 'mock';
+  updated_at: string;
+}
+
+export interface RestaurantTable {
+  id: string;
+  table_number: string;
+  floor_number: string | null;
+  capacity: number;
+  status: 'active' | 'inactive';
+  created_at: string;
+}
+
 // Minimal Database type for the Supabase generic client.
 // Run `supabase gen types typescript` to replace with full generated types.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -196,6 +221,8 @@ export interface Database {
       orders: { Row: Order; Insert: Record<string, unknown>; Update: Record<string, unknown> };
       order_items: { Row: OrderItem; Insert: Record<string, unknown>; Update: Record<string, unknown> };
       reservations: { Row: Reservation; Insert: Record<string, unknown>; Update: Record<string, unknown> };
+      app_settings: { Row: AppSettings; Insert: Record<string, unknown>; Update: Record<string, unknown> };
+      restaurant_tables: { Row: RestaurantTable; Insert: Record<string, unknown>; Update: Record<string, unknown> };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
