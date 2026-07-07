@@ -9,7 +9,7 @@ export async function createPaymentOrder(
   items: CartItem[],
   appliedCoins: number,
   earnedCoins: number,
-  accessToken?: string,
+  accessToken?: string | null,
 ) {
   const paymentMode = "live";
 
