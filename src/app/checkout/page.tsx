@@ -146,8 +146,7 @@ function CheckoutContent() {
       const { data: sessionData } = await import('@/lib/supabaseClient').then(m => m.supabase.auth.getSession());
       const accessToken = sessionData?.session?.access_token;
 
-      const { order, razorpay_order_id, payment_mode } =
-        await createPaymentOrder(
+      const result = await createPaymentOrder(
           JSON.parse(JSON.stringify({
             customer_id: userId || null,
             guest_name: data.guest_name,
@@ -162,6 +161,14 @@ function CheckoutContent() {
           Math.floor(finalTotal),
           accessToken || null
         );
+
+      if (result && 'error' in result && result.error) {
+        toast.error(result.error as string);
+        setSubmitting(false);
+        return;
+      }
+
+      const { order, razorpay_order_id, payment_mode } = result as any;
 
 
 

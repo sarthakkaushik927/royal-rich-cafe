@@ -11,74 +11,78 @@ export async function createPaymentOrder(
   earnedCoins: number,
   accessToken?: string | null,
 ) {
-  const paymentMode = "live";
+  try {
+    const paymentMode = "live";
+    const totalAmount = orderPayload.total_amount || 0;
 
-  const totalAmount = orderPayload.total_amount || 0;
+    // Create payment provider order
+    const provider = getPaymentProvider(paymentMode as "live" | "mock");
+    const paymentOrder = await provider.createOrder({
+      amount: Math.round(totalAmount * 100), // paise
+      currency: "INR",
+      receipt: orderPayload.tracking_token || `rcpt_${Date.now()}`,
+    });
 
+    const fullOrderPayload = {
+      ...orderPayload,
+      payment_mode: paymentMode,
+      payment_status: "pending",
+      currency: "INR",
+      razorpay_order_id: paymentOrder.id,
+    };
 
-  const provider = getPaymentProvider(paymentMode as "live" | "mock");
-  const paymentOrder = await provider.createOrder({
-    amount: Math.round(totalAmount * 100), // paise
-    currency: "INR",
-    receipt: orderPayload.tracking_token || `rcpt_${Date.now()}`,
-  });
-
-  const fullOrderPayload = {
-    ...orderPayload,
-    payment_mode: paymentMode,
-    payment_status: "pending",
-    currency: "INR",
-    razorpay_order_id: paymentOrder.id,
-  };
-
-  // Instantiate client with user's access token if provided
-  let dbClient = supabase;
-  if (accessToken) {
-    const { createClient } = await import('@supabase/supabase-js');
-    dbClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+    // Instantiate client with user's access token if provided
+    let dbClient = supabase;
+    if (accessToken) {
+      const { createClient } = await import('@supabase/supabase-js');
+      dbClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        },
-      }
-    );
+        }
+      );
+    }
+
+    // Create order in DB
+    const { data: order, error: orderError } = await dbClient
+      .from("orders")
+      .insert(fullOrderPayload)
+      .select()
+      .single();
+
+    if (orderError) return { success: false, error: orderError.message };
+
+    const typedOrder = order as Order;
+
+    const itemRows = items.map((item) => ({
+      order_id: typedOrder.id,
+      food_item_id: item.food_item_id,
+      size: item.size,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      subtotal: item.unit_price * item.quantity,
+    }));
+
+    const { error: itemsError } = await dbClient
+      .from("order_items")
+      .insert(itemRows);
+
+    if (itemsError) return { success: false, error: itemsError.message };
+
+    return {
+      order: typedOrder,
+      razorpay_order_id: paymentOrder.id,
+      payment_mode: paymentMode,
+    };
+  } catch (error: any) {
+    console.error("Order creation error:", error);
+    return { success: false, error: error.message || "Failed to create order" };
   }
-
-  // Create order in DB
-  const { data: order, error: orderError } = await dbClient
-    .from("orders")
-    .insert(fullOrderPayload)
-    .select()
-    .single();
-
-  if (orderError) throw new Error(orderError.message);
-
-  const typedOrder = order as Order;
-
-  const itemRows = items.map((item) => ({
-    order_id: typedOrder.id,
-    food_item_id: item.food_item_id,
-    size: item.size,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    subtotal: item.unit_price * item.quantity,
-  }));
-
-  const { error: itemsError } = await dbClient
-    .from("order_items")
-    .insert(itemRows);
-
-  if (itemsError) throw new Error(itemsError.message);
-
-  return {
-    order: typedOrder,
-    razorpay_order_id: paymentOrder.id,
-    payment_mode: paymentMode,
-  };
 }
 
 export async function verifyPaymentAction(request: {
