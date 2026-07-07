@@ -197,6 +197,7 @@ function CheckoutContent() {
               const tokens = storedTokens ? JSON.parse(storedTokens) : [];
               tokens.push(order.tracking_token);
               localStorage.setItem("royal_cafe_orders", JSON.stringify(tokens));
+              setSubmitting(false);
 
               if (userId && Math.floor(finalTotal) > 0) {
                 setEarnedCoinsPopup({
@@ -209,10 +210,12 @@ function CheckoutContent() {
               }
             } else {
               toast.error("Payment verification failed. Please contact support.");
+              setSubmitting(false);
             }
           } catch (err) {
             console.error("Payment verification error:", err);
             toast.error("An error occurred during verification. Please contact support.");
+            setSubmitting(false);
           }
         },
         prefill: {
@@ -222,6 +225,12 @@ function CheckoutContent() {
         },
         theme: {
           color: "#D4A24C",
+        },
+        modal: {
+          ondismiss: function () {
+            setSubmitting(false);
+            toast.info("Payment cancelled.");
+          },
         },
       };
 
@@ -237,7 +246,7 @@ function CheckoutContent() {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !earnedCoinsPopup) {
     return (
       <main className="min-h-screen bg-[#0D0B09] flex flex-col items-center justify-center text-center px-6">
         <h2 className="font-serif text-2xl text-[#F7F3EC] mb-3">
