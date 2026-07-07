@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { foodService } from '@/services/foodService';
 import { toast } from 'sonner';
 import { Modal } from '@/components/ui/Modal';
@@ -98,16 +99,12 @@ export function CategoryModal({ isOpen, onClose, categoryToEdit }: CategoryModal
           <p className="text-xs text-[#C7BFB2]/60 mt-1">This will be used in the URL.</p>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#C7BFB2]">Image URL (Optional)</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full rounded-lg border border-[#D4A24C]/15 bg-[#141210] p-3 text-[#F7F3EC] outline-none focus:border-[#D4A24C]/40"
-            placeholder="https://..."
-          />
-        </div>
+        <ImageUpload
+          value={imageUrl}
+          onChange={setImageUrl}
+          label="Image (Optional)"
+          aspectRatio={1}
+        />
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-[#C7BFB2]">Display Order</label>

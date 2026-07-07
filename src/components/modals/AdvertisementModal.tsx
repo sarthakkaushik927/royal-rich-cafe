@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { adService } from '@/services/adService';
 import { toast } from 'sonner';
 import { Modal } from '@/components/ui/Modal';
@@ -119,16 +120,12 @@ export function AdvertisementModal({ isOpen, onClose, foodItems, adToEdit }: Adv
           <p className="text-xs text-[#C7BFB2]/60 mt-1">Customers will be taken to this item when they click the ad.</p>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#C7BFB2]">Banner Image URL (Optional)</label>
-          <input
-            type="url"
-            value={bannerImageUrl}
-            onChange={(e) => setBannerImageUrl(e.target.value)}
-            className="w-full rounded-lg border border-[#D4A24C]/15 bg-[#141210] p-3 text-[#F7F3EC] outline-none focus:border-[#D4A24C]/40"
-            placeholder="https://..."
-          />
-        </div>
+        <ImageUpload
+          value={bannerImageUrl}
+          onChange={setBannerImageUrl}
+          label="Banner Image (Optional)"
+          aspectRatio={16 / 7}
+        />
 
         <div className="flex gap-4">
           <div className="flex-1 space-y-2">

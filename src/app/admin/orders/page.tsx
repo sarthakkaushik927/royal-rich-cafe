@@ -1,7 +1,7 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Eye, Loader2, ReceiptText } from 'lucide-react';
+import { Search, Filter, Eye, Loader2, ReceiptText, Calendar, CreditCard, UtensilsCrossed, X } from 'lucide-react';
 import { useAllOrders } from '@/hooks/useOrderData';
 import { StatusBadge } from '@/components/ui/Badge';
 import { OrderDetailsModal } from '@/components/modals/OrderDetailsModal';
@@ -10,21 +10,58 @@ import type { OrderStatus } from '@/lib/types';
 export default function Page() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'failed'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'dine_in' | 'takeaway' | 'delivery'>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [selectedToken, setSelectedToken] = useState<string | undefined>();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: orders = [], isLoading } = useAllOrders();
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = 
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      (order.guest_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
-      (order.guest_phone || '').includes(search);
-    
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const filteredOrders = useMemo(() => {
+    return orders
+      .filter((order) => {
+        const matchesSearch = 
+          order.id.toLowerCase().includes(search.toLowerCase()) ||
+          (order.guest_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+          (order.guest_phone || '').includes(search);
+        
+        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        const matchesPayment = paymentFilter === 'all' || order.payment_status === paymentFilter;
+        const matchesType = typeFilter === 'all' || order.order_type === typeFilter;
+
+        let matchesDate = true;
+        if (dateFrom) {
+          const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+          matchesDate = matchesDate && orderDate >= dateFrom;
+        }
+        if (dateTo) {
+          const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+          matchesDate = matchesDate && orderDate <= dateTo;
+        }
+        
+        return matchesSearch && matchesStatus && matchesPayment && matchesType && matchesDate;
+      })
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [orders, search, statusFilter, paymentFilter, typeFilter, dateFrom, dateTo]);
+
+  const activeFilterCount = [
+    statusFilter !== 'all',
+    paymentFilter !== 'all',
+    typeFilter !== 'all',
+    dateFrom !== '',
+    dateTo !== '',
+  ].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setStatusFilter('all');
+    setPaymentFilter('all');
+    setTypeFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setSearch('');
+  };
 
   return (
     <div className="animate-fade-in pt-4 space-y-6">
@@ -35,9 +72,15 @@ export default function Page() {
             <ReceiptText size={16} />
             <span>Order History Catalog ({filteredOrders.length} Records)</span>
           </div>
+          {activeFilterCount > 0 && (
+            <button onClick={clearAllFilters} className="text-xs text-[#C7BFB2] hover:text-[#D4A24C] transition-colors flex items-center gap-1 normal-case tracking-normal font-sans">
+              <X size={12} /> Clear {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+            </button>
+          )}
         </h3>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-2">
+        {/* Row 1: Search + Status */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-0">
           <div className="relative flex-1 max-w-md">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C7BFB2]" />
             <input
@@ -54,7 +97,7 @@ export default function Page() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as OrderStatus | 'all')}
-              className="w-full sm:w-48 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-8 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors appearance-none cursor-pointer"
+              className="w-full sm:w-44 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-8 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors appearance-none cursor-pointer"
             >
               <option value="all">ALL STATUSES</option>
               <option value="pending">PENDING</option>
@@ -64,6 +107,59 @@ export default function Page() {
               <option value="completed">COMPLETED</option>
               <option value="cancelled">CANCELLED</option>
             </select>
+          </div>
+
+          <div className="relative shrink-0">
+            <CreditCard size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C7BFB2]" />
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value as any)}
+              className="w-full sm:w-40 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-8 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors appearance-none cursor-pointer"
+            >
+              <option value="all">ALL PAYMENTS</option>
+              <option value="pending">UNPAID</option>
+              <option value="paid">PAID</option>
+              <option value="failed">FAILED</option>
+            </select>
+          </div>
+
+          <div className="relative shrink-0">
+            <UtensilsCrossed size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C7BFB2]" />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+              className="w-full sm:w-40 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-8 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors appearance-none cursor-pointer"
+            >
+              <option value="all">ALL TYPES</option>
+              <option value="dine_in">DINE IN</option>
+              <option value="takeaway">TAKEAWAY</option>
+              <option value="delivery">DELIVERY</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Row 2: Date range */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div className="relative shrink-0">
+            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C7BFB2] pointer-events-none" />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full sm:w-44 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-3 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors [color-scheme:dark]"
+              placeholder="From date"
+            />
+          </div>
+          <span className="text-[#C7BFB2]/40 text-xs hidden sm:block">to</span>
+          <div className="relative shrink-0">
+            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C7BFB2] pointer-events-none" />
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full sm:w-44 bg-black/60 border border-[#D4A24C]/20 text-white py-2 pl-9 pr-3 rounded text-xs focus:outline-none focus:border-[#D4A24C] transition-colors [color-scheme:dark]"
+              placeholder="To date"
+            />
           </div>
         </div>
 

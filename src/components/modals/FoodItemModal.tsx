@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, Loader2 } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { foodService } from '@/services/foodService';
 import { toast } from 'sonner';
@@ -173,16 +174,12 @@ export function FoodItemModal({ isOpen, onClose, categories, itemToEdit }: FoodI
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#C7BFB2]">Image URL</label>
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full rounded-lg border border-[#D4A24C]/15 bg-[#141210] p-3 text-[#F7F3EC] outline-none focus:border-[#D4A24C]/40"
-                placeholder="https://..."
-              />
-            </div>
+            <ImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              label="Image"
+              aspectRatio={16 / 10}
+            />
 
             <div className="flex items-center gap-3">
               <input
