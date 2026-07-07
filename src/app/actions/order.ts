@@ -15,7 +15,7 @@ export async function createPaymentOrder(
 
   const totalAmount = orderPayload.total_amount || 0;
 
-  // Create payment provider order
+
   const provider = getPaymentProvider(paymentMode as "live" | "mock");
   const paymentOrder = await provider.createOrder({
     amount: Math.round(totalAmount * 100), // paise

@@ -148,23 +148,19 @@ function CheckoutContent() {
 
       const { order, razorpay_order_id, payment_mode } =
         await createPaymentOrder(
-          {
-            customer_id: userId ?? undefined,
+          JSON.parse(JSON.stringify({
+            customer_id: userId || null,
             guest_name: data.guest_name,
             guest_phone: data.guest_phone,
             order_type: data.order_type,
-            table_number:
-              data.order_type === "dine_in" ? data.table_number : undefined,
-            delivery_address:
-              data.order_type === "delivery"
-                ? data.delivery_address
-                : undefined,
+            table_number: data.table_number || null,
+            delivery_address: data.delivery_address || null,
             total_amount: finalTotal,
-          },
-          items,
+          })),
+          JSON.parse(JSON.stringify(items)),
           coinsToUse,
           Math.floor(finalTotal),
-          accessToken
+          accessToken || null
         );
 
 
