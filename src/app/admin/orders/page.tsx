@@ -76,7 +76,9 @@ export default function Page() {
                   <th className="px-4 py-3 font-bold">Customer</th>
                   <th className="px-4 py-3 font-bold">Type</th>
                   <th className="px-4 py-3 font-bold">Date & Time</th>
-                  <th className="px-4 py-3 font-bold">Total</th>
+                  <th className="px-4 py-3 font-bold">Subtotal</th>
+                  <th className="px-4 py-3 font-bold">Discount</th>
+                  <th className="px-4 py-3 font-bold">Paid</th>
                   <th className="px-4 py-3 font-bold">Status</th>
                   <th className="px-4 py-3 text-right font-bold">Action</th>
                 </tr>
@@ -84,17 +86,20 @@ export default function Page() {
               <tbody className="divide-y divide-[#D4A24C]/5">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center">
+                    <td colSpan={9} className="px-4 py-12 text-center">
                       <Loader2 className="animate-spin text-[#D4A24C] mx-auto w-6 h-6" />
                     </td>
                   </tr>
                 ) : filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-[#C7BFB2]/50">
+                    <td colSpan={9} className="px-4 py-12 text-center text-[#C7BFB2]/50">
                       No orders found matching your criteria.
                     </td>
                   </tr>
-                ) : filteredOrders.map((order) => (
+                ) : filteredOrders.map((order) => {
+                  const discount = order.discount_amount || 0;
+                  const subtotal = order.total_amount + discount;
+                  return (
                   <motion.tr
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -118,6 +123,19 @@ export default function Page() {
                         {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
+                    <td className="px-4 py-3 font-bold text-[#C7BFB2]">
+                      ₹{subtotal.toFixed(0)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {discount > 0 ? (
+                        <div>
+                          <span className="text-green-400 font-bold">-₹{discount.toFixed(0)}</span>
+                          <div className="text-[9px] text-[#C7BFB2]/60 mt-0.5">{order.applied_coins || 0} coins</div>
+                        </div>
+                      ) : (
+                        <span className="text-[#C7BFB2]/30">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-bold text-[#D4A24C]">
                       ₹{order.total_amount.toFixed(0)}
                     </td>
@@ -139,7 +157,8 @@ export default function Page() {
                       </button>
                     </td>
                   </motion.tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

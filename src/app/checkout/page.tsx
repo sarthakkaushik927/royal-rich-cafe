@@ -155,10 +155,12 @@ function CheckoutContent() {
             table_number: data.table_number || null,
             delivery_address: data.delivery_address || null,
             total_amount: finalTotal,
+            applied_coins: coinsToUse,
+            discount_amount: discountAmount,
           })),
           JSON.parse(JSON.stringify(items)),
           coinsToUse,
-          Math.floor(finalTotal),
+          Math.floor(finalTotal / 2),
           accessToken || null
         );
 
@@ -187,7 +189,7 @@ function CheckoutContent() {
               razorpay_signature: response.razorpay_signature,
               order_id: order.id,
               customer_id: userId || null,
-              earned_coins: Math.floor(finalTotal),
+              earned_coins: Math.floor(finalTotal / 2),
               applied_coins: coinsToUse,
             });
 
@@ -199,9 +201,9 @@ function CheckoutContent() {
               localStorage.setItem("royal_cafe_orders", JSON.stringify(tokens));
               setSubmitting(false);
 
-              if (userId && Math.floor(finalTotal) > 0) {
+              if (userId && Math.floor(finalTotal / 2) > 0) {
                 setEarnedCoinsPopup({
-                  amount: Math.floor(finalTotal),
+                  amount: Math.floor(finalTotal / 2),
                   trackingToken: order.tracking_token,
                 });
               } else {

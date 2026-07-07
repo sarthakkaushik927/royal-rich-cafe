@@ -33,8 +33,8 @@ export const orderService: OrderService = {
     const discountAmount = appliedCoins * 0.01;
     const finalTotal = Math.max(0, subtotal - discountAmount);
     
-    // 1 coin earned per 1 rs spent
-    const earnedCoins = Math.floor(finalTotal);
+    // 1 coin earned per 2 rs spent (50% rate)
+    const earnedCoins = Math.floor(finalTotal / 2);
 
     const orderPayload = {
       customer_id: input.customer_id ?? null,
