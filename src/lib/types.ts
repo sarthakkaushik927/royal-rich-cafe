@@ -118,6 +118,20 @@ export interface OrderItem {
   food_item?: FoodItem;
 }
 
+// ─── Inventory ────────────────────────────────────────────────
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  stock: number;
+  min_stock: number;
+  unit: string;
+  cost_per_unit: number;
+  expiry: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Cart (client-only) ─────────────────────────────────────
 
 export interface CartItem {
