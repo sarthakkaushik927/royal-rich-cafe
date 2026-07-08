@@ -20,7 +20,7 @@ export default function Page() {
     try {
       await authService.signIn(email, password);
       // Wait a moment for auth state to propagate if needed, then navigate
-      navigate.push('/chef');
+      navigate.replace('/chef');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid credentials');
     } finally {

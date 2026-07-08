@@ -19,7 +19,7 @@ export default function Page() {
 
     try {
       await authService.signIn(email, password);
-      navigate.push('/admin');
+      navigate.replace('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid credentials');
     } finally {

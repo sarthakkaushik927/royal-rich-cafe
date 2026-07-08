@@ -226,6 +226,27 @@ export function Navbar() {
               );
             })}
 
+            <div className="flex justify-center gap-6 py-2 border-t border-[#31231a] mt-2 pt-4">
+              {dashboardLinks.map((dash) => {
+                const isActive = pathname === dash.path;
+                return (
+                  <Link
+                    key={dash.name}
+                    href={dash.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex flex-col items-center gap-1.5 transition ${
+                      isActive
+                        ? "text-luxury-gold font-semibold"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    <dash.icon size={20} />
+                    <span className="text-[9px] uppercase tracking-wider">{dash.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
             <Link
               href={
                 isMounted && isAuthenticated

@@ -132,7 +132,14 @@ function AuthContent() {
         }
 
         toast.success('Successfully logged in!');
-        router.replace(redirectTo);
+        
+        if (profile?.role === 'admin') {
+          router.replace('/admin');
+        } else if (profile?.role === 'chef') {
+          router.replace('/chef');
+        } else {
+          router.replace(redirectTo);
+        }
       }
     } else if (mode === 'forgot_password') {
       const resetUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent('/auth/update-password')}`;
